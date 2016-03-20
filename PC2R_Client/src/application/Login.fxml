@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.GridPane?>
+
+<GridPane fx:id="mainFrame" alignment="CENTER" hgap="10.0" prefHeight="301.0" prefWidth="381.0" vgap="10.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.LoginController">
+	<padding>
+		<Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+	</padding>
+	<columnConstraints>
+		<ColumnConstraints maxWidth="200.0" minWidth="70.0" prefWidth="80.0" />
+		<ColumnConstraints maxWidth="500.0" minWidth="10.0" prefWidth="160.0" />
+	</columnConstraints>
+	<rowConstraints>
+		<RowConstraints minHeight="10.0" prefHeight="30.0" />
+		<RowConstraints />
+		<RowConstraints minHeight="10.0" prefHeight="30.0" />
+		<RowConstraints minHeight="0.0" prefHeight="0.0" />
+		<RowConstraints maxHeight="38.0" minHeight="0.0" prefHeight="26.0" />
+		<RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0" />
+		<RowConstraints maxHeight="60.0" minHeight="10.0" prefHeight="34.0" />
+	</rowConstraints>
+	<children>
+		<Label text="Username" GridPane.rowIndex="1" />
+		<TextField fx:id="userTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+		<Label text="Serveur" GridPane.rowIndex="2" />
+		<TextField fx:id="hostTextField" text="localhost" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+		<Label text="Welcome" GridPane.columnSpan="2">
+			<font>
+				<Font size="20.0" />
+			</font>
+		</Label>
+		<HBox alignment="BOTTOM_RIGHT" minHeight="-Infinity" minWidth="-Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4">
+			<children>
+				<Button fx:id="loginButton" alignment="BOTTOM_LEFT" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Connexion" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+			</children>
+		</HBox>
+      <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="1" GridPane.rowIndex="6">
+         <children>
+      		<Text fx:id="errorMessageText" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+         </children>
+      </HBox>
+	</children>
+</GridPane>

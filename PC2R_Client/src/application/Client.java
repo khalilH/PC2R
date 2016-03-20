@@ -6,9 +6,12 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.rmi.ConnectException;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -22,10 +25,12 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import rasendeRoboter.Outils;
+import rasendeRoboter.Plateau;
 import rasendeRoboter.Protocole;
 
 public class Client extends Application {
@@ -44,6 +49,9 @@ public class Client extends Application {
 	private Button logoutButton;
 	private Stage stage;
 	private boolean premierLancement = true;
+	private Plateau plateau;
+	private GridPane plateauGrid;
+
 
 
 
@@ -109,6 +117,7 @@ public class Client extends Application {
 	}
 
 	public Socket connexion(String username, String host, Text actionTarget)  {
+		actionTarget.setFill(Color.FIREBRICK);
 		boolean ok = Outils.checkHostAndCheckUsername(username, host, actionTarget);
 		if (ok) {
 			this.host= host;
@@ -130,15 +139,11 @@ public class Client extends Application {
 				//					actionTarget.setText("Invalid name"); // TODO changer message affichage
 				//					return null;
 				//				}
-			}catch (ConnectException e) {
-				e.printStackTrace();
-				return null;
-			} 
-			catch (UnknownHostException e) {
-				e.printStackTrace();
+			} catch (UnknownHostException e) {
+				actionTarget.setText(e.getMessage());
 				return null;
 			} catch (IOException e) {
-				e.printStackTrace();
+				actionTarget.setText(e.getMessage());
 				return null;
 			}
 		}
@@ -151,7 +156,25 @@ public class Client extends Application {
 			chatTextArea = (TextArea) root.lookup("#chatTextArea");
 			sendChatTextArea = (TextArea) root.lookup("#sendChatTextArea");
 			logoutButton = (Button) root.lookup("#logoutButton");
+			plateauGrid = (GridPane) root.lookup("#plateauGrid");
 		}
+	}
+
+	public void updatePlateau(){
+		Platform.runLater( new Runnable() {
+			@Override
+			public void run() {
+				BorderPane caseGUI;
+				for (int i = 0; i<16 ; i++) {
+					for (int j = 0; j<16 ; j++) {
+						caseGUI = plateau.getCase(i, j).render();
+						GridPane.setColumnIndex(caseGUI, j);
+						GridPane.setRowIndex(caseGUI, i);
+						plateauGrid.getChildren().add(caseGUI);
+					}
+				}
+			}
+		});
 	}
 
 	public void installEventHandler() {
@@ -199,12 +222,6 @@ public class Client extends Application {
 			Label hostAdressLabel = (Label) game.lookup("#hostAdressLabel");
 			hostAdressLabel.setText(host);
 
-
-
-
-
-
-
 			/* fin traitement */
 
 			if (scene == null)
@@ -223,7 +240,7 @@ public class Client extends Application {
 
 	public void decoderReponseServer(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
-		String user, message;
+		String user, message, data;
 		switch (commande) {
 		case Protocole.BIENVENUE:
 			System.out.println("BIENVENUE");
@@ -242,51 +259,44 @@ public class Client extends Application {
 			if (!user.equals(userName))
 				chatTextArea.appendText(user+" : "+message+"\n");
 			break;
+		case Protocole.SESSION:
+			data = Outils.getFirstArg(reponse);
+			plateau = new Plateau(data);
+			updatePlateau();
+			serverAnswer.appendText("Debut Session\n");
+			break;
 		default:
 			serverAnswer.appendText(reponse+"\n");
 
 
 		}
-
-		/*if (Protocole.&& cmds.length == 2) {
-			System.out.println("Connexion reussie");
-		}
-		else if (cmds[0].equals("CONNECTE") && cmds.length == 2) {
-			String user = cmds[1];
-			System.out.println(user+" s'est connecte" );
-		}
-		else if (cmds[0].equals("SORTI") && cmds.length == 2) {
-			String user = cmds[1];
-			System.out.println(user+" s'est deconnecte");
-		}
-		else if (cmds[0].equals("SESSION") && cmds.length == 2) {
-			String descriptionPlateau = cmds[1];
-			plateau = new Plateau(descriptionPlateau);
-			System.out.println(plateau);
-		}
-		else{
-			System.out.println("Commande inconnue....");
-		}*/
 	}
 
-	class Receive extends Thread {
-		;
 
-		public Receive() {
-		}
+	class Receive extends Service<Void> {
 
 		@Override
-		public void run() {
-			String recu;
-			try {
-				while ((recu = in.readLine()) != null) {
-					decoderReponseServer(recu);
-					yield();
+		protected Task<Void> createTask() {
+			return new Task<Void>() {
+
+				@Override
+				protected Void call() throws Exception {
+					String recu;
+					try {
+						while ((recu = in.readLine()) != null) {
+							decoderReponseServer(recu);
+							updateValue(null);
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return null;
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+			};
+		}	
+	};
+
+
+
 
 }

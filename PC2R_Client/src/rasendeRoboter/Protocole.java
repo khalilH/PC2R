@@ -10,6 +10,7 @@ public class Protocole {
 	public static final String CONNECTE = "CONNECTE";
 	public static final String SORTI = "SORTI";
 	public static final String RECEIVE_CHAT = "RECEIVE";
+	public static final String SESSION = "SESSION";
 
 	public static final String CONNEX = "CONNEX";
 	public static final String SORT = "SORT";

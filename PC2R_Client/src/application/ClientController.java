@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 
 public class ClientController {
 	@FXML private BorderPane mainFrame;
@@ -13,5 +14,6 @@ public class ClientController {
 	@FXML private Label hostAdressLabel;
 	@FXML private Label version;
 	@FXML private Button logoutButton;
+	@FXML private GridPane plateauGrid;
 
 }

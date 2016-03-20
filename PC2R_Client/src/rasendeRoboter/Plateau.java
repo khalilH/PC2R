@@ -35,6 +35,18 @@ public class Plateau {
 		}
 	}
 	
+	public Case getCase(int i, int j) {
+		return plateau[i][j];
+	}
+	
+	public void reset() {
+		for (int i=0; i < plateau.length; i++) {
+			for (int j=0; j<plateau.length; j++) {
+				plateau[i][j].reset();
+			}
+		}
+	}
+	
 	public String toString() {
 		String ret = "";
 		for (int i=0; i < plateau.length; i++) {
@@ -55,17 +67,5 @@ public class Plateau {
 		return ret;
 	}
 	
-	public BorderPane buildG() {
-		BorderPane casePlateau = new BorderPane();
-		casePlateau.setLeft(leftWall());
-		return casePlateau;
-	}
-
-	public Pane leftWall() {
-		Pane left = new Pane();
-		left.setStyle("-fx-background-color: #000000;");
-		left.setPrefSize(3.0, 15.0);
-		return left;
-	}
 
 }

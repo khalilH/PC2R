@@ -1,12 +1,18 @@
 package rasendeRoboter;
 
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+
 public class Case {
+	BorderPane caseGUI;
+	Pane center;
 	private boolean haut;
 	private boolean bas;
 	private boolean gauche;
 	private boolean droit;
-	
+
 	public Case() {
+		caseGUI = new BorderPane();
 		haut = false;
 		bas= false;
 		gauche = false;
@@ -20,7 +26,7 @@ public class Case {
 	public void setHaut(boolean haut) {
 		this.haut = haut;
 	}
-
+	
 	public boolean isBas() {
 		return bas;
 	}
@@ -44,7 +50,7 @@ public class Case {
 	public void setDroit(boolean droit) {
 		this.droit = droit;
 	}
-	
+
 	public boolean caseAdjacente() {
 		return (gauche && haut) || (gauche && bas) 
 				|| (droit && haut) || (bas && droit);
@@ -54,7 +60,14 @@ public class Case {
 		return gauche || droit || haut || bas;
 	}
 	
-	public void buildWall(String mur) {
+	public void reset() {
+		haut = false;
+		bas= false;
+		gauche = false;
+		droit = false;
+	}
+
+	protected void buildWall(String mur) {
 		if (mur.equals("H")) {
 			setHaut(true);
 		}
@@ -68,4 +81,47 @@ public class Case {
 			setDroit(true);
 		}	
 	}
+
+	public BorderPane render() {
+		caseGUI.getChildren().clear();
+		if (isBas())
+			botWall();
+		if (isHaut())
+			topWall();
+		if (isDroit())
+			rightWall();
+		if (isGauche())
+			leftWall();
+		return caseGUI;
+	}
+
+	private void leftWall() {
+		Pane left = new Pane();
+		left.setStyle("-fx-background-color: #000000;");
+		left.setPrefSize(3.0, 15.0);
+		caseGUI.setLeft(left);
+
+	}
+
+	private void rightWall() {
+		Pane right = new Pane();
+		right.setStyle("-fx-background-color: #000000;");
+		right.setPrefSize(3.0, 15.0);
+		caseGUI.setRight(right);
+	}
+
+	private void topWall() {
+		Pane top = new Pane();
+		top.setStyle("-fx-background-color: #000000;");
+		top.setPrefSize(15.0, 3.0);
+		caseGUI.setTop(top);
+	}
+
+	private void botWall() {
+		Pane bot = new Pane();
+		bot.setStyle("-fx-background-color: #000000;");
+		bot.setPrefSize(15.0, 3.0);
+		caseGUI.setBottom(bot);
+	}
+
 }

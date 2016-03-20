@@ -1,5 +1,8 @@
 package rasendeRoboter;
 
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+
 public class Plateau {
 	private Case[][] plateau;
 	/* penser a garder un plateau original */
@@ -51,4 +54,18 @@ public class Plateau {
 		}
 		return ret;
 	}
+	
+	public BorderPane buildG() {
+		BorderPane casePlateau = new BorderPane();
+		casePlateau.setLeft(leftWall());
+		return casePlateau;
+	}
+
+	public Pane leftWall() {
+		Pane left = new Pane();
+		left.setStyle("-fx-background-color: #000000;");
+		left.setPrefSize(3.0, 15.0);
+		return left;
+	}
+
 }

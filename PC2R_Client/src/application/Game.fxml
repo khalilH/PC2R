@@ -28,8 +28,8 @@
    <top>
       <HBox alignment="CENTER_RIGHT" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="test" prefHeight="17.0" prefWidth="1057.0" text="Welcome Khalil" />
-            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onMouseClicked="#disconnect" text="Deconnexion" textAlignment="CENTER" />
+            <Label fx:id="version" prefHeight="17.0" prefWidth="1057.0" text="Version 1.0" />
+            <Button fx:id="logoutButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Deconnexion" textAlignment="CENTER" />
          </children>
          <padding>
             <Insets right="10.0" />
@@ -41,10 +41,10 @@
          <bottom>
             <HBox prefHeight="68.0" prefWidth="269.0" BorderPane.alignment="CENTER">
                <children>
-                  <TextArea fx:id="sendChatTextArea" onKeyPressed="#sendMessage" prefHeight="61.0" prefWidth="215.0" promptText="Enter a message ..." wrapText="true" />
+                  <TextArea fx:id="sendChatTextArea" prefHeight="61.0" prefWidth="215.0" promptText="Enter a message ..." wrapText="true" />
                   <HBox alignment="BOTTOM_RIGHT" prefHeight="68.0" prefWidth="60.0">
                      <children>
-                        <Button mnemonicParsing="false" onAction="#sendMessageWithButton" prefHeight="25.0" prefWidth="52.0" text="Send">
+                        <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="52.0" text="Send">
                            <HBox.margin>
                               <Insets left="5.0" />
                            </HBox.margin>

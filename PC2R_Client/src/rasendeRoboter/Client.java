@@ -1,6 +1,4 @@
 package rasendeRoboter;
-import interf.FenetreClient;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,8 +6,6 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
-
-import javax.swing.JDialog;
 
 public class Client {
 
@@ -43,7 +39,6 @@ public class Client {
 	
 	
 	
-	private FenetreClient fenetre;
 	private Socket socket;
 	private final String user;
 	private BufferedReader in;
@@ -56,7 +51,6 @@ public class Client {
 	//TODO Thread envoie + Thread reception
 	
 	public Client() {
-		fenetre = new FenetreClient();
 		user = "ladi";
 	}
 

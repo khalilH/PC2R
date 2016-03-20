@@ -50,6 +50,7 @@ public class Main extends Application {
 	private String host;
 	private Stage stage;
 	private BorderPane root;
+	private Scene scene2;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -58,9 +59,9 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		stage = primaryStage;
-				initConnexionGUI(primaryStage);
+		initConnexionGUI(primaryStage);
 		//TODO remettre initConnexionGUI quand initClientGUIfini
-//		initClientGUI(primaryStage);
+		//		initClientGUI(primaryStage);
 
 	}  
 
@@ -70,7 +71,6 @@ public class Main extends Application {
 		hbox.setSpacing(10);   // Gap between nodes
 		hbox.setStyle("-fx-background-color: #116699;");
 		Color.LIGHTGREY.toString();
-
 		Text hostLabel= new Text("Connecte sur 132.125.133.199");
 		hostLabel.setFont(Font.font("Tahoma", FontWeight.NORMAL, 13));
 		hostLabel.setFill(Color.WHITE);
@@ -91,97 +91,96 @@ public class Main extends Application {
 	}
 
 	public void initClientGUI(Stage stage) {
-//
-//		primaryStage.setTitle("Rasende Roboter");
-//		StackPane root = new StackPane();
-//		BorderPane border = new BorderPane();
-//		HBox topHbox = createTopBar();
-//		border.setTop(topHbox);
-//
-//
-//		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-//			@Override public void handle(WindowEvent t) {
-//				if(out != null) {
-//					out.print("SORT/"+userName+"/\n");
-//				}
-//				System.out.println("CLOSING");
-//			}
-//		});
-//		root.getChildren().add(border);
-//		primaryStage.setScene(new Scene(root,800,600));
-//		primaryStage.setX(100.0);
-//		primaryStage.setY(100.0);
-//		primaryStage.show();
-		
+		//
+		//		primaryStage.setTitle("Rasende Roboter");
+		//		StackPane root = new StackPane();
+		//		BorderPane border = new BorderPane();
+		//		HBox topHbox = createTopBar();
+		//		border.setTop(topHbox);
+		//
+		//
+		//		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+		//			@Override public void handle(WindowEvent t) {
+		//				if(out != null) {
+		//					out.print("SORT/"+userName+"/\n");
+		//				}
+		//				System.out.println("CLOSING");
+		//			}
+		//		});
+		//		root.getChildren().add(border);
+		//		primaryStage.setScene(new Scene(root,800,600));
+		//		primaryStage.setX(100.0);
+		//		primaryStage.setY(100.0);
+		//		primaryStage.show();
+
 		try {
-		root = (BorderPane) FXMLLoader.load(getClass().getResource("fxml_client.fxml"));
-		Scene scene = new Scene(root);
-		GridPane plateau = (GridPane) root.getCenter();
-		ClientController clientController = getClientController();
-//		clientController.init(this);
+			root = (BorderPane) FXMLLoader.load(getClass().getResource("fxml_client.fxml"));
+			Scene scene = new Scene(root);
+			GridPane plateau = (GridPane) root.getCenter();
+			ClientController clientController = getClientController();
+			//		clientController.init(this);
 
-		for (int i = 0; i<16 ; i++) {
+			for (int i = 0; i<16 ; i++) {
 
-			for (int j = 0; j<16 ; j++) {
+				for (int j = 0; j<16 ; j++) {
 
-				BorderPane casePlateau = buildG();
-				if (i==1 && j == 1) {
-					casePlateau.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<Event>() {
+					BorderPane casePlateau = buildG();
+					if (i==1 && j == 1) {
+						casePlateau.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<Event>() {
 
-						@Override
-						public void handle(Event event) {
-							clientController.send(out, "lasdlad");
-						}
-					});
+							@Override
+							public void handle(Event event) {
+							}
+						});
+					}
+					GridPane.setRowIndex(casePlateau, i);
+					GridPane.setColumnIndex(casePlateau, j);
+					plateau.getChildren().add(casePlateau);
 				}
-				GridPane.setRowIndex(casePlateau, i);
-				GridPane.setColumnIndex(casePlateau, j);
-				plateau.getChildren().add(casePlateau);
 			}
-		}
-		stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-			@Override public void handle(WindowEvent t) {
-				if(out != null) {
-					out.print("SORT/"+userName+"/\n");
+			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+				@Override public void handle(WindowEvent t) {
+					if(out != null) {
+						out.print("SORT/"+userName+"/\n");
+					}
+					initConnexionGUI(stage);
 				}
-				initConnexionGUI(stage);
-			}
-		});
-		stage.setScene(scene);
-		stage.setTitle("Rasende Roboter");
-		this.stage = stage;
-		stage.show();
+			});
+			stage.setScene(scene);
+			stage.setTitle("Rasende Roboter");
+			this.stage = stage;
+			stage.show();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-		
-		public ClientController getClientController() {
-			FXMLLoader fxmlLoader = new FXMLLoader();
-			try {
-				fxmlLoader.load(getClass().getResource("fxml_client.fxml").openStream());
-				ClientController clientController = (ClientController) fxmlLoader.getController();
-				return clientController;
-			} catch (IOException e) {
-				e.printStackTrace();
-				return null;
-			}
+
+	public ClientController getClientController() {
+		FXMLLoader fxmlLoader = new FXMLLoader();
+		try {
+			fxmlLoader.load(getClass().getResource("fxml_client.fxml").openStream());
+			ClientController clientController = (ClientController) fxmlLoader.getController();
+			return clientController;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
 		}
+	}
 
 
-		public BorderPane buildG() {
-			BorderPane casePlateau = new BorderPane();
-			casePlateau.setLeft(leftWall());
-			return casePlateau;
-		}
+	public BorderPane buildG() {
+		BorderPane casePlateau = new BorderPane();
+		casePlateau.setLeft(leftWall());
+		return casePlateau;
+	}
 
-		public Pane leftWall() {
-			Pane left = new Pane();
-			left.setStyle("-fx-background-color: #000000;");
-			left.setPrefSize(3.0, 15.0);
-			return left;
-		}
+	public Pane leftWall() {
+		Pane left = new Pane();
+		left.setStyle("-fx-background-color: #000000;");
+		left.setPrefSize(3.0, 15.0);
+		return left;
+	}
 
 
 	public void initConnexionGUI(Stage primaryStage) {
@@ -215,7 +214,7 @@ public class Main extends Application {
 		bhAt.setAlignment(Pos.BOTTOM_RIGHT);
 		bhAt.getChildren().add(actionTarget);
 		grid.add(bhAt, 1, 6);
-		//		grid.setGridLinesVisible(true); //TODO grid
+				grid.setGridLinesVisible(true); //TODO grid
 
 		Button btn = new Button("Connexion");
 		HBox hbBtn = new HBox(10);
@@ -250,7 +249,7 @@ public class Main extends Application {
 
 		grid.add(hbBtn, 1, 4);
 		root.getChildren().add(grid);
-		primaryStage.setAlwaysOnTop(true);
+		//		primaryStage.setAlwaysOnTop(true);
 		primaryStage.setScene(new Scene(root,400,300));
 		primaryStage.show();
 
@@ -298,7 +297,7 @@ public class Main extends Application {
 		}
 		return socket;
 	}
-	
+
 	class Receive extends Thread {
 		;
 
@@ -331,6 +330,6 @@ public class Main extends Application {
 		TextArea ta = (TextArea) root.lookup("#serverAnswer"); 
 		ta.appendText(recu+"\n");
 		// TODO Auto-generated method stub
-		
+
 	}
 }

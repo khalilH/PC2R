@@ -1,5 +1,5 @@
 package rasendeRoboter;
 
 public enum Phase {
-	REFLEXION, ENCHERE, RESOLUTION;
+	INIT, REFLEXION, ENCHERE, RESOLUTION, ATTENTE_TOUR;
 }

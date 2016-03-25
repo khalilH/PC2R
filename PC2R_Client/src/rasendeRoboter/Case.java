@@ -82,6 +82,10 @@ public class Case {
 		}	
 	}
 
+	public BorderPane getPane() {
+		return caseGUI;
+	}
+	
 	public BorderPane render() {
 		caseGUI.getChildren().clear();
 		if (isBas())

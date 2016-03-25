@@ -1,7 +1,6 @@
 package rasendeRoboter;
 
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 
 public class Plateau {
 	private Case[][] plateau;
@@ -37,6 +36,10 @@ public class Plateau {
 	
 	public Case getCase(int i, int j) {
 		return plateau[i][j];
+	}
+	
+	public BorderPane getPane(int i, int j) {
+		return plateau[i][j].getPane();
 	}
 	
 	public void reset() {

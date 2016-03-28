@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -287,23 +288,23 @@ public class Client extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
-				if (phase == Phase.RESOLUTION) {
-					String deplacements = solutionTextArea.getText();
-					currentSolution = "";
-					if (Outils.isValidSolution(deplacements)) {
-						Protocole.sendSolution(userName,deplacements,out);
-						solutionTextArea.setText("");
-						solutionButton.setDisable(true);
-						solutionTextArea.setDisable(true);
-						solutionVBox.setVisible(false);
-					}
-					else {
-						System.err.println("isValidSolution : je ne dois pas passer ici");
-					}
+				//				if (phase == Phase.RESOLUTION) {
+				String deplacements = solutionTextArea.getText();
+				currentSolution = "";
+				if (Outils.isValidSolution(deplacements)) {
+					Protocole.sendSolution(userName,deplacements,out);
+					solutionTextArea.setText("");
+					solutionButton.setDisable(true);
+					solutionTextArea.setDisable(true);
+					solutionVBox.setVisible(false);
 				}
 				else {
-					System.err.println("solutionButtonEventHandle : Je ne dois pas passer ici");
+					System.err.println("isValidSolution : je ne dois pas passer ici");
 				}
+				//				}
+				//				else {
+				//					System.err.println("solutionButtonEventHandle : Je ne dois pas passer ici");
+				//				}
 			}
 		});
 		solutionTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
@@ -453,6 +454,22 @@ public class Client extends Application {
 		});
 	}
 
+	public void updatePlateauAnim(){
+		BorderPane caseGUI;
+		plateauGrid.setGridLinesVisible(false);
+		plateauGrid.getChildren().clear();
+		for (int i = 0; i<16 ; i++) {
+			for (int j = 0; j<16 ; j++) {
+				caseGUI = plateau.getCase(i, j).render();
+				GridPane.setColumnIndex(caseGUI, j);
+				GridPane.setRowIndex(caseGUI, i);
+
+				plateauGrid.getChildren().add(caseGUI);
+			}
+		}
+		plateauGrid.setGridLinesVisible(true);
+	}
+
 	public void decoderReponseServer(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
 		String user, message, data, enigme;
@@ -495,7 +512,7 @@ public class Client extends Application {
 			data= Outils.getSecondArg(reponse);
 			bilan.decoderBilan(data);
 			updateBilan();
-			// TODO lancer timer + afficher enigme
+			// TODO lancer timer
 			this.enigme = new Enigme(enigme);
 			plateau.setEnigme(this.enigme);
 			updatePlateau();
@@ -592,7 +609,9 @@ public class Client extends Application {
 					solutionTextArea.setText("Joueur Actif "+user);
 				}
 				else {
-					updateServerAnswer("Taper votre solution");
+					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+					updateServerAnswer("Touches autorisees : r, b, j, v et "
+							+ "fleches directionnelles");
 					solutionButton.setDisable(false);
 					solutionTextArea.setDisable(false);
 					solutionVBox.setVisible(true);
@@ -613,7 +632,7 @@ public class Client extends Application {
 				}
 				attenteStatutSolution = true;
 				updateServerAnswer("debug : debut animation");
-				//TODO ici faire l'animation de la solution
+				startAnimation(data);
 				updateServerAnswer("debug : fin animation");
 			}
 			else {
@@ -635,11 +654,14 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Solution refusee");
+				//TODO clean plateau
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
 				}
 				else {
-					updateServerAnswer("Taper votre solution");
+					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+					updateServerAnswer("Touches autorisees : r, b, j, v et "
+							+ "fleches directionnelles");
 					solutionButton.setDisable(false);
 					solutionTextArea.setDisable(false);
 					solutionVBox.setVisible(true);
@@ -673,7 +695,6 @@ public class Client extends Application {
 					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
 					updateServerAnswer("Touches autorisees : r, b, j, v et "
 							+ "fleches directionnelles");
-					updateServerAnswer("Taper votre solution");
 					solutionButton.setDisable(false);
 					solutionTextArea.setDisable(false);
 					solutionVBox.setVisible(true);
@@ -685,18 +706,52 @@ public class Client extends Application {
 				System.err.println(Protocole.TROP_LONG+" - je ne dois pas passer ici");
 			}
 			break;
+			//TODO proto bidon pour test
+		case "MOVE": 
+			data = Outils.getFirstArg(reponse);
+			startAnimation(data);
+			updatePlateau();
+			break;
 		case "HACK": 
-			updateServerAnswer("Taper votre solution");
+			updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+			updateServerAnswer("Touches autorisees : r, b, j, v et "
+					+ "fleches directionnelles");
 			solutionButton.setDisable(false);
 			solutionTextArea.setDisable(false);
 			solutionVBox.setVisible(true);
 			taperCouleurRobot = true;
 			currentSolution = "";
 			break;
+		case "RESET":
+			updateServerAnswer("reset du plateau !!!");
+			plateau.setEnigme(this.enigme);
+			//TODO gerer clean du plateau
+			updatePlateau();
+			break;
 		default:
 			updateServerAnswer("default "+reponse);
+			break;
+		}
+	}
 
 
+	private void startAnimation(String data) {
+		ArrayList<String> coups = Outils.getCoups(data);
+		for(String coup : coups) {
+			while (plateau.move(coup)) {
+				Platform.runLater(new Runnable() {
+
+					@Override
+					public void run() {
+						updatePlateauAnim();
+					}
+				});
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -727,6 +782,7 @@ public class Client extends Application {
 	private void updateChat(String s) {
 		chatTextArea.appendText(s+"\n");
 	}
+
 
 
 	class Receive extends Service<Void> {

@@ -1,5 +1,7 @@
 package rasendeRoboter;
 
+import java.util.ArrayList;
+
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
@@ -70,5 +72,14 @@ public class Outils {
 			return cmd[2];
 		else
 			return null;
+	}
+	
+	public static ArrayList<String> getCoups(String deplacements) {
+		ArrayList<String> coups = new ArrayList<>();
+		while (deplacements.length() > 1) {
+			coups.add(deplacements.substring(0, 2));
+			deplacements = deplacements.substring(2);
+		}
+		return coups;
 	}
 }

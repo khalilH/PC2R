@@ -64,8 +64,8 @@ public class Case {
 		this.cible = cible;
 	}
 
-	public boolean isRobot() {
-		return !robot.equals("");
+	public boolean isVide() {
+		return robot.equals("");
 	}
 	
 	public void setRobot(String robot) {
@@ -83,6 +83,8 @@ public class Case {
 	}
 
 	public void reset() {
+		robot = "";
+		cible = "";
 		haut = false;
 		bas= false;
 		gauche = false;
@@ -153,6 +155,10 @@ public class Case {
 		bot.setPrefSize(15.0, 3.0);
 		caseGUI.setBottom(bot);
 	}
+	
+	public void enleverRobot() {
+		robot = "";
+	}
 
 	public void displayRobot() {
 		Pane l = new Pane();
@@ -202,7 +208,7 @@ public class Case {
 	}
 
 	public void displayCible() {
-		Label l = new Label("X");
+		Label l = new Label(" X ");
 		if (robot.equals("")) {
 			switch (cible) {
 			case "R":

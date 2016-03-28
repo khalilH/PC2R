@@ -57,6 +57,13 @@ public class Protocole {
 		send(TROUVE, username, coups, out);
 	}
 
+	public static void sendEnchere(String userName, String coups, PrintStream out) {
+		send(ENCHERE, userName, coups, out);
+	}
+
+	public static void sendSolution(String userName, String deplacements, PrintStream out) {
+		send(SOLUTION, userName, deplacements, out);
+	}
 
 
 	private static void send(String commande, String param1, PrintStream out){
@@ -67,10 +74,7 @@ public class Protocole {
 		out.print(commande+"/"+param1+"/"+param2+"/\n");
 	}
 
-	public static void sendEnchere(String userName, String coups, PrintStream out) {
-		// TODO Auto-generated method stub
-		
-	}
+
 
 
 	//TODO rajouter le reste

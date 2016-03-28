@@ -17,17 +17,23 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import rasendeRoboter.Bilan;
+import rasendeRoboter.Bilan.Score;
 import rasendeRoboter.Outils;
 import rasendeRoboter.Phase;
 import rasendeRoboter.Plateau;
@@ -38,30 +44,44 @@ public class Client extends Application {
 	private static final String LOGIN_SCREEN_UI = "Login.fxml";
 	private static final String GAME_SCREEN_UI = "Game.fxml";
 
+
+	/* Client stuff */
 	private String userName, host;
-	private AnchorPane root;
-	private Scene scene;
 	private Socket socket;
 	private BufferedReader in;
 	private PrintStream out;
 	private Receive receiver;
-	private TextArea serverAnswer, chatTextArea, sendChatTextArea;
-	private Button logoutButton;
-	private Stage stage;
-	private boolean premierLancement = true, tuAsTrouve = false,
-			tuEnchere = false;
+
+	/* Game Components */
+	private Bilan bilan;
 	private boolean attenteStatutSolution = false;
-	private Plateau plateau;
-	private GridPane plateauGrid;
-	private Phase phase = null;
-	private TextField coupTextField;
-	private Button trouveEnchereButton;
-	private Label errorLabel;
-	private EventHandler<KeyEvent> filter;
+	private boolean premierLancement = true;
+	private boolean tuAsTrouve = false;
+	private boolean tuEnchere = false;
+	private boolean taperCouleurRobot= true;
+	private String currentSolution = "";
 	private int lastEnchere = Integer.MAX_VALUE;
+	private Phase phase = null;
+	private Plateau plateau;
 
-
-
+	/* javaFX Nodes */
+	private AnchorPane root;
+	private Button logoutButton;
+	private Button solutionButton;
+	private Button trouveEnchereButton;
+	private EventHandler<KeyEvent> filter;
+	private GridPane plateauGrid;
+	private Label errorLabel;
+	private TextArea solutionTextArea;
+	private Label tourLabel;
+	private Scene scene;
+	private Stage stage;
+	private TextArea serverAnswer;
+	private TextArea chatTextArea;
+	private TextArea sendChatTextArea;
+	private TextField coupTextField;
+	private TableView<Score> scoreTableView;
+	private VBox solutionVBox;
 
 
 	public static void main(String[] args) {
@@ -114,8 +134,8 @@ public class Client extends Application {
 			root.getChildren().add(rootLogin);
 			if (scene == null)
 				scene = new Scene(root);
-			stage.setMinWidth(400);
-			stage.setMinHeight(300);
+			//			stage.setMinWidth(400);
+			//			stage.setMinHeight(300);
 			stage.setScene(scene);
 			stage.centerOnScreen();
 			stage.setTitle("Rasende Roboter Launcher");
@@ -139,19 +159,23 @@ public class Client extends Application {
 					this.out = new PrintStream(socket.getOutputStream(), true);
 				}
 				Protocole.connect(userName, out);
-//				TODO decommenter pour gestion BIENVENUE ou login non dispo
+
+				//				TODO decommenter pour gestion BIENVENUE ou login non dispo
+				this.receiver = new Receive();
+				receiver.start();
 				/************************************************************/
-				String serverAnswer = in.readLine();
+				/************************************************************/
+				/*String serverAnswer = in.readLine();
 				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
 
 					this.receiver = new Receive();
 					receiver.start();
 				}
 				else {
-					actionTarget.setText("Invalid name"); // TODO changer message affichage
 					return null;
-				}
+				}*/
 				/**************************************************************/
+				/************************************************************/
 			} catch (UnknownHostException e) {
 				actionTarget.setText(e.getMessage());
 				return null;
@@ -163,6 +187,7 @@ public class Client extends Application {
 		return socket;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void initInternalNodes() {
 		if (root != null) {
 			serverAnswer = (TextArea) root.lookup("#serverAnswer");
@@ -173,7 +198,25 @@ public class Client extends Application {
 			coupTextField = (TextField) root.lookup("#coupTextField");
 			trouveEnchereButton = (Button) root.lookup("#trouveEnchereButton");
 			errorLabel = (Label) root.lookup("#errorLabel");
+			tourLabel = (Label) root.lookup("#tourLabel");
+			Object tmp = root.lookup("#scoreTableView");
+			scoreTableView = (TableView<Score>) tmp;
+			TableColumn<Score,String> userCol = 
+					new TableColumn<Score,String>("Username");
+			userCol.setMinWidth(150);
+			userCol.setCellValueFactory(
+					new PropertyValueFactory<>("user"));
 
+			TableColumn<Score,Integer> scoreCol = 
+					new TableColumn<Score,Integer>("Score");
+			scoreCol.setMinWidth(100);
+			scoreCol.setCellValueFactory(
+					new PropertyValueFactory<>("score"));
+			scoreTableView.getColumns().add(userCol);
+			scoreTableView.getColumns().add(scoreCol);
+			solutionButton = (Button) root.lookup("#solutionButton");
+			solutionTextArea = (TextArea) root.lookup("#solutionTextArea");
+			solutionVBox = (VBox) root.lookup("#solutionVBox");
 		}
 	}
 
@@ -238,6 +281,105 @@ public class Client extends Application {
 				}
 			}
 		});
+		solutionButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				if (phase == Phase.RESOLUTION) {
+					String deplacements = solutionTextArea.getText();
+					currentSolution = "";
+					if (Outils.isValidSolution(deplacements)) {
+						Protocole.sendSolution(userName,deplacements,out);
+						solutionTextArea.setText("");
+						solutionButton.setDisable(true);
+						solutionTextArea.setDisable(true);
+						solutionVBox.setVisible(false);
+					}
+					else {
+						System.err.println("isValidSolution : je ne dois pas passer ici");
+					}
+				}
+				else {
+					System.err.println("solutionButtonEventHandle : Je ne dois pas passer ici");
+				}
+			}
+		});
+		solutionTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				event.consume();
+				KeyCode key = event.getCode();
+
+				if (taperCouleurRobot) {
+					switch (key) {
+					case R:
+						currentSolution += "R";
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case B:
+						currentSolution += "B";
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case J:
+						currentSolution += "J"; 
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case V:
+						currentSolution += "V"; 
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case DELETE:
+						if (currentSolution.length() > 0) {
+							taperCouleurRobot = !taperCouleurRobot;
+							currentSolution = currentSolution.substring(0, currentSolution.length()-1);
+						}
+						break;
+					case BACK_SPACE:
+						if (currentSolution.length() > 0) {
+							taperCouleurRobot = !taperCouleurRobot;
+							currentSolution = currentSolution.substring(0, currentSolution.length()-1);
+						}
+						break;
+					default:
+					}
+				}
+				else {
+					switch(key) {
+					case UP:
+						currentSolution += "H"; 
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case DOWN:
+						currentSolution += "B";
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case LEFT:
+						currentSolution += "G";
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case RIGHT:
+						currentSolution += "D";
+						taperCouleurRobot = !taperCouleurRobot;
+						break;
+					case DELETE:
+						if (currentSolution.length() > 0) {
+							taperCouleurRobot = !taperCouleurRobot;
+							currentSolution = currentSolution.substring(0, currentSolution.length()-1);
+						}
+						break;
+					case BACK_SPACE:
+						if (currentSolution.length() > 0) {
+							taperCouleurRobot = !taperCouleurRobot;
+							currentSolution = currentSolution.substring(0, currentSolution.length()-1);
+						}
+						break;
+					default:
+					}
+				}
+				solutionTextArea.setText(currentSolution);
+			}
+		});
 	}
 
 	public void initClientGUI(Stage stage) {
@@ -253,7 +395,12 @@ public class Client extends Application {
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 				@Override public void handle(WindowEvent t) {
 					if(out != null) {
-						Protocole.disconnect(userName, out);//TODO gerer fermeture fenetre	
+						Protocole.disconnect(userName, out);
+						try {
+							socket.shutdownOutput();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			});
@@ -262,14 +409,17 @@ public class Client extends Application {
 			serverAnswer.appendText("Bienvenue "+userName+"\n");
 			Label hostAdressLabel = (Label) game.lookup("#hostAdressLabel");
 			hostAdressLabel.setText(host);
+			bilan = new Bilan();
 
 			/* fin traitement */
 
 			if (scene == null)
 				scene = new Scene(root);
 
-			stage.setMinWidth(1204);
-			stage.setMinHeight(680);
+			//			stage.setMinWidth(1204);
+			stage.setWidth(1150);
+			stage.setHeight(680);
+			//			stage.setMinHeight(680);
 			stage.setScene(scene);
 			stage.setTitle("Rasende Roboter Client");
 			stage.centerOnScreen();
@@ -280,7 +430,7 @@ public class Client extends Application {
 
 	}
 
-	// TODO revoir l'affichage et la mise a jour du plateau
+	// TODO mise a jour du plateau, rajouter robot + enigme
 	public void updatePlateau(){
 		Platform.runLater( new Runnable() {
 			@Override
@@ -305,7 +455,7 @@ public class Client extends Application {
 
 	public void decoderReponseServer(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
-		String user, message, data, enigme, bilan;
+		String user, message, data, enigme;
 		switch (commande) {
 		case Protocole.BIENVENUE:
 			System.out.println("BIENVENUE");
@@ -335,14 +485,17 @@ public class Client extends Application {
 			updateServerAnswer("Debut Session");
 			break;
 		case Protocole.VAINQUEUR:
-			user = Outils.getFirstArg(reponse);
+			data = Outils.getFirstArg(reponse);
 			updateServerAnswer("Fin de la session");
-			updateServerAnswer("Le vainqueur est : "+user);
+			bilan.decoderBilan(data);
+			updateBilan();
 			break;
 		case Protocole.TOUR:
 			enigme = Outils.getFirstArg(reponse);
-			bilan = Outils.getFirstArg(reponse);
-			// TODO faire qqch avec enigme et bilan, lancer timer
+			data= Outils.getSecondArg(reponse);
+			bilan.decoderBilan(data);
+			updateBilan();
+			// TODO lancer timer + afficher enigme
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				trouveEnchereButton.setText("Trouve");
@@ -386,7 +539,7 @@ public class Client extends Application {
 				phase = Phase.ENCHERE;			
 				updateServerAnswer("Expiration du delai imparti a la reflexion");
 				updateServerAnswer("Fin de la phase de reflexion");
-				// TODO Debut de la phade d'enchere plus adapte ?
+				updateServerAnswer("Debut de la phase d'enchere");
 				updateTrouveEnchereButton("Encherir");
 				lastEnchere = Integer.MAX_VALUE;
 			}
@@ -433,11 +586,15 @@ public class Client extends Application {
 
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
-					// TODO mettre info du joueur dans un Label
+					solutionTextArea.setText("Joueur Actif "+user);
 				}
 				else {
 					updateServerAnswer("Taper votre solution");
-					//TODO preparer envoie solution, utiliser un boolean
+					solutionButton.setDisable(false);
+					solutionTextArea.setDisable(false);
+					solutionVBox.setVisible(true);
+					taperCouleurRobot = true;
+					currentSolution = "";
 				}
 			}
 			else {
@@ -477,11 +634,14 @@ public class Client extends Application {
 				updateServerAnswer("Solution refusee");
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
-					// TODO mettre info du joueur dans un Label
 				}
 				else {
 					updateServerAnswer("Taper votre solution");
-					//TODO preparer envoie solution, utiliser un boolean
+					solutionButton.setDisable(false);
+					solutionTextArea.setDisable(false);
+					solutionVBox.setVisible(true);
+					taperCouleurRobot = true;
+					currentSolution = "";
 				}
 				attenteStatutSolution = false;
 			}
@@ -493,7 +653,6 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION) {
 				updateServerAnswer("Plus de joueurs restants");
 				updateServerAnswer("Fin du tour");
-				//TODO bien verifier que les boolean sont reset
 				phase = Phase.ATTENTE_TOUR;
 			}
 			else {
@@ -506,22 +665,47 @@ public class Client extends Application {
 				updateServerAnswer("Temps depasse");
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
-					// TODO mettre info du joueur dans un Label
 				}
 				else {
+					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+					updateServerAnswer("Touches autorisees : r, b, j, v et "
+							+ "fleches directionnelles");
 					updateServerAnswer("Taper votre solution");
-					//TODO preparer envoie solution, utiliser un boolean
+					solutionButton.setDisable(false);
+					solutionTextArea.setDisable(false);
+					solutionVBox.setVisible(true);
+					taperCouleurRobot = true;
+					currentSolution = "";
 				}
 			}
 			else {
 				System.err.println(Protocole.TROP_LONG+" - je ne dois pas passer ici");
 			}
 			break;
+		case "HACK": 
+			updateServerAnswer("Taper votre solution");
+			solutionButton.setDisable(false);
+			solutionTextArea.setDisable(false);
+			solutionVBox.setVisible(true);
+			taperCouleurRobot = true;
+			currentSolution = "";
+			break;
 		default:
 			updateServerAnswer("default "+reponse);
 
 
 		}
+	}
+
+	private void updateBilan() {
+		Platform.runLater( new Runnable() {
+			@Override
+			public void run() {
+				int tour = bilan.getTour();
+				tourLabel.setText("Tour "+tour);
+				scoreTableView.setItems(bilan.getScoreSheet());
+			}
+		});
 	}
 
 	private void updateTrouveEnchereButton(String text) {

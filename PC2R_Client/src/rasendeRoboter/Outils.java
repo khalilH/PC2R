@@ -6,17 +6,35 @@ import javafx.scene.text.Text;
 public class Outils {
 	
 	public static boolean checkUsername(String username) {
-		//TODO rajouter regexp
 		if (username == null || username.equals(""))
 			return false;
-		return true;
+		return username.matches("\\w+");
 	}
 	
 	public static boolean checkHost(String host) {
-		//TODO rajouter regexp
-		if (host == null || host.equals(""))
+		if (host == null)
 			return false;
-		return true;
+		if (host.equals("localhost")) {
+			return true;
+		}
+		if (host.matches("^\\d+.\\d+.\\d+.\\d+$")) {
+			String[] ip = host.split("\\.");
+			for (String s : ip) {
+				System.out.println(s);
+				int number = Integer.parseInt(s);
+				if (!(number < 256 && number >= 0)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean isValidSolution(String deplacements) {
+		if (deplacements == null || deplacements.equals(""))
+			return false;
+		return deplacements.matches("([RBJV][HBGD])+");
 	}
 	
 	public static boolean checkHostAndCheckUsername(

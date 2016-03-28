@@ -34,6 +34,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import rasendeRoboter.Bilan;
 import rasendeRoboter.Bilan.Score;
+import rasendeRoboter.Enigme;
 import rasendeRoboter.Outils;
 import rasendeRoboter.Phase;
 import rasendeRoboter.Plateau;
@@ -63,6 +64,7 @@ public class Client extends Application {
 	private int lastEnchere = Integer.MAX_VALUE;
 	private Phase phase = null;
 	private Plateau plateau;
+	private Enigme enigme;
 
 	/* javaFX Nodes */
 	private AnchorPane root;
@@ -430,7 +432,6 @@ public class Client extends Application {
 
 	}
 
-	// TODO mise a jour du plateau, rajouter robot + enigme
 	public void updatePlateau(){
 		Platform.runLater( new Runnable() {
 			@Override
@@ -438,7 +439,6 @@ public class Client extends Application {
 				BorderPane caseGUI;
 				plateauGrid.setGridLinesVisible(false);
 				plateauGrid.getChildren().clear();
-
 				for (int i = 0; i<16 ; i++) {
 					for (int j = 0; j<16 ; j++) {
 						caseGUI = plateau.getCase(i, j).render();
@@ -496,6 +496,9 @@ public class Client extends Application {
 			bilan.decoderBilan(data);
 			updateBilan();
 			// TODO lancer timer + afficher enigme
+			this.enigme = new Enigme(enigme);
+			plateau.setEnigme(this.enigme);
+			updatePlateau();
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				trouveEnchereButton.setText("Trouve");

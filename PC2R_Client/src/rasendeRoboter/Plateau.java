@@ -1,9 +1,12 @@
 package rasendeRoboter;
 
+import java.awt.Point;
+
 import javafx.scene.layout.BorderPane;
 
 public class Plateau {
 	private Case[][] plateau;
+	private Enigme enigme;
 	/* penser a garder un plateau original */
 	/* voir si je met une Enigme ici */
 	
@@ -34,6 +37,25 @@ public class Plateau {
 		}
 	}
 	
+	public void setEnigme(Enigme enigme) {
+		//TODO faire gaffe un robot par case
+		this.enigme = enigme;
+		Point cible = enigme.getCiblePosition();
+		plateau[cible.x][cible.y].setCible(enigme.getCibleColor());
+		Point rouge = enigme.getRouge();
+		plateau[rouge.x][rouge.y].setRobot("R");
+		Point bleu= enigme.getBleu();
+		plateau[bleu.x][bleu.y].setRobot("B");
+		Point jaune = enigme.getJaune();
+		plateau[jaune.x][jaune.y].setRobot("J");
+		Point vert = enigme.getVert();
+		plateau[vert.x][vert.y].setRobot("V");
+	}
+	
+	public Enigme getEnigme() {
+		return enigme;
+	}
+		
 	public Case getCase(int i, int j) {
 		return plateau[i][j];
 	}

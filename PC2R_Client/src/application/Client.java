@@ -50,6 +50,7 @@ public class Client extends Application {
 	private Stage stage;
 	private boolean premierLancement = true, tuAsTrouve = false,
 			tuEnchere = false;
+	private boolean attenteStatutSolution = false;
 	private Plateau plateau;
 	private GridPane plateauGrid;
 	private Phase phase = null;
@@ -58,6 +59,8 @@ public class Client extends Application {
 	private Label errorLabel;
 	private EventHandler<KeyEvent> filter;
 	private int lastEnchere = Integer.MAX_VALUE;
+
+
 
 
 
@@ -136,16 +139,19 @@ public class Client extends Application {
 					this.out = new PrintStream(socket.getOutputStream(), true);
 				}
 				Protocole.connect(userName, out);
-				//				String serverAnswer = in.readLine();
-				//if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
-				// TODO decommenter pour gestion BIENVENUE ou login non dispo
-				this.receiver = new Receive();
-				receiver.start();
-				//				}
-				//				else {
-				//					actionTarget.setText("Invalid name"); // TODO changer message affichage
-				//					return null;
-				//				}
+//				TODO decommenter pour gestion BIENVENUE ou login non dispo
+				/************************************************************/
+				String serverAnswer = in.readLine();
+				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
+
+					this.receiver = new Receive();
+					receiver.start();
+				}
+				else {
+					actionTarget.setText("Invalid name"); // TODO changer message affichage
+					return null;
+				}
+				/**************************************************************/
 			} catch (UnknownHostException e) {
 				actionTarget.setText(e.getMessage());
 				return null;
@@ -155,31 +161,6 @@ public class Client extends Application {
 			}
 		}
 		return socket;
-	}
-
-
-
-	// TODO revoir l'affichage et la mise a jour du plateau
-	public void updatePlateau(){
-		Platform.runLater( new Runnable() {
-			@Override
-			public void run() {
-				BorderPane caseGUI;
-				plateauGrid.setGridLinesVisible(false);
-				plateauGrid.getChildren().clear();
-
-				for (int i = 0; i<16 ; i++) {
-					for (int j = 0; j<16 ; j++) {
-						caseGUI = plateau.getCase(i, j).render();
-						GridPane.setColumnIndex(caseGUI, j);
-						GridPane.setRowIndex(caseGUI, i);
-
-						plateauGrid.getChildren().add(caseGUI);
-					}
-				}
-				plateauGrid.setGridLinesVisible(true);
-			}
-		});
 	}
 
 	public void initInternalNodes() {
@@ -299,6 +280,29 @@ public class Client extends Application {
 
 	}
 
+	// TODO revoir l'affichage et la mise a jour du plateau
+	public void updatePlateau(){
+		Platform.runLater( new Runnable() {
+			@Override
+			public void run() {
+				BorderPane caseGUI;
+				plateauGrid.setGridLinesVisible(false);
+				plateauGrid.getChildren().clear();
+
+				for (int i = 0; i<16 ; i++) {
+					for (int j = 0; j<16 ; j++) {
+						caseGUI = plateau.getCase(i, j).render();
+						GridPane.setColumnIndex(caseGUI, j);
+						GridPane.setRowIndex(caseGUI, i);
+
+						plateauGrid.getChildren().add(caseGUI);
+					}
+				}
+				plateauGrid.setGridLinesVisible(true);
+			}
+		});
+	}
+
 	public void decoderReponseServer(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
 		String user, message, data, enigme, bilan;
@@ -310,7 +314,7 @@ public class Client extends Application {
 			user = Outils.getFirstArg(reponse);
 			updateServerAnswer(user+" s'est connecte");
 			break;
-		case Protocole.SORTI:
+		case Protocole.DECONNEXION:
 			user = Outils.getFirstArg(reponse);
 			updateServerAnswer(user+" s'est deconnecte");
 			break;
@@ -390,7 +394,7 @@ public class Client extends Application {
 				System.err.println("Je ne dois pas passer ici");
 			}
 			break;
-		case Protocole.TU_ENCHERE:
+		case Protocole.VALIDATION:
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				updateServerAnswer("Enchere validee");
 				trouveEnchereButton.setDisable(true);
@@ -400,7 +404,7 @@ public class Client extends Application {
 				System.err.println("Je ne dois pas passer ici");
 			}
 			break;
-		case Protocole.ECHEC_ENCHERE:
+		case Protocole.ECHEC:
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Enchere annulee car incoherente avec celle de "+user);
@@ -410,7 +414,7 @@ public class Client extends Application {
 				System.err.println("Je ne dois pas passer ici");
 			}
 			break;
-		case Protocole.IL_ENCHERE:
+		case Protocole.NOUVELLE_ENCHERE:
 			if (phase == Phase.ENCHERE) {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
@@ -438,6 +442,79 @@ public class Client extends Application {
 			}
 			else {
 				System.err.println("Je ne dois pas passer ici");
+			}
+			break;
+		case Protocole.SA_SOLUTION:
+			if (phase == Phase.RESOLUTION && attenteStatutSolution == false) {
+				user = Outils.getFirstArg(reponse);
+				data = Outils.getSecondArg(reponse);
+				if (!user.equals(userName)) {
+					updateServerAnswer(user+" a propose une solution");
+				}
+				attenteStatutSolution = true;
+				updateServerAnswer("debug : debut animation");
+				//TODO ici faire l'animation de la solution
+				updateServerAnswer("debug : fin animation");
+			}
+			else {
+				System.err.println("Je ne dois pas passer ici");
+			}
+			break;
+		case Protocole.BONNE:
+			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
+				updateServerAnswer("Solution correcte");
+				updateServerAnswer("Fin du tour");
+				attenteStatutSolution = false;
+				phase = Phase.ATTENTE_TOUR;
+			}
+			else {
+				System.err.println("Je ne dois pas passer ici");
+			}
+			break;
+		case Protocole.MAUVAISE:
+			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
+				user = Outils.getFirstArg(reponse);
+				updateServerAnswer("Solution refusee");
+				if (!user.equals(userName)) {
+					updateServerAnswer("Le joueur actif est "+user);
+					// TODO mettre info du joueur dans un Label
+				}
+				else {
+					updateServerAnswer("Taper votre solution");
+					//TODO preparer envoie solution, utiliser un boolean
+				}
+				attenteStatutSolution = false;
+			}
+			else {
+				System.err.println("Je ne dois pas passer ici");
+			}
+			break;
+		case Protocole.FIN_RESOLUTION:
+			if (phase == Phase.RESOLUTION) {
+				updateServerAnswer("Plus de joueurs restants");
+				updateServerAnswer("Fin du tour");
+				//TODO bien verifier que les boolean sont reset
+				phase = Phase.ATTENTE_TOUR;
+			}
+			else {
+				System.err.println("je ne dois pas passer ici");
+			}
+			break;
+		case Protocole.TROP_LONG:
+			if (phase == Phase.RESOLUTION) {
+				user = Outils.getFirstArg(reponse);
+				updateServerAnswer("Temps depasse");
+				if (!user.equals(userName)) {
+					updateServerAnswer("Le joueur actif est "+user);
+					// TODO mettre info du joueur dans un Label
+				}
+				else {
+					updateServerAnswer("Taper votre solution");
+					//TODO preparer envoie solution, utiliser un boolean
+				}
+			}
+			else {
+				System.err.println(Protocole.TROP_LONG+" - je ne dois pas passer ici");
 			}
 			break;
 		default:

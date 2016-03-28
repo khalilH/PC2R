@@ -8,7 +8,7 @@ public class Protocole {
 
 	public static final String BIENVENUE = "BIENVENUE";
 	public static final String CONNECTE = "CONNECTE";
-	public static final String SORTI = "SORTI";
+	public static final String DECONNEXION = "DECONNEXION";
 	
 	public static final String RECEIVE_CHAT = "RECEIVE";
 	
@@ -20,9 +20,9 @@ public class Protocole {
 	public static final String IL_A_TROUVE = "ILATROUVE";
 	public static final String FIN_REFLEXION = "FINREFLEXION";
 	
-	public static final String TU_ENCHERE = "TUENCHERE";
-	public static final String ECHEC_ENCHERE = "ECHECENCHERE";
-	public static final String IL_ENCHERE = "ILENCHERE";
+	public static final String VALIDATION = "VALIDATION";
+	public static final String ECHEC = "ECHEC";
+	public static final String NOUVELLE_ENCHERE = "NOUVELLEENCHERE";
 	public static final String FIN_ENCHERE = "FINENCHERE";
 	
 	public static final String SA_SOLUTION = "SASOLUTION";
@@ -31,7 +31,7 @@ public class Protocole {
 	public static final String FIN_RESOLUTION = "FINRESO";
 	public static final String TROP_LONG = "TROPLONG";
 	
-	public static final String CONNEX = "CONNEX";
+	public static final String CONNEXION = "CONNEXION";
 	public static final String SORT = "SORT";
 	public static final String SEND_CHAT = "SEND";
 	
@@ -46,7 +46,7 @@ public class Protocole {
 	}
 
 	public static void connect(String username, PrintStream out) {
-		send(CONNEX, username, out);
+		send(CONNEXION, username, out);
 	}
 
 	public static void sendChat(String username, String message, PrintStream out) {

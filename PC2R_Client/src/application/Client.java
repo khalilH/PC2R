@@ -257,7 +257,9 @@ public class Client extends Application {
 		trouveEnchereButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
+				
 				if (phase == Phase.REFLEXION) {
+					errorLabel.setText("");
 					String coups = coupTextField.getText();
 					coupTextField.setText("");
 					if(coups.matches("\\d+")) {
@@ -271,6 +273,7 @@ public class Client extends Application {
 					}
 				}
 				else if (phase == Phase.ENCHERE) {
+					errorLabel.setText("");
 					String coups = coupTextField.getText();
 					coupTextField.setText("");
 					if(coups.matches("\\d+")) {
@@ -539,8 +542,13 @@ public class Client extends Application {
 			updatePlateau();
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
-				trouveEnchereButton.setText("Trouve");
-				trouveEnchereButton.setDisable(false);
+				Platform.runLater(new Runnable() {			
+					@Override
+					public void run() {
+						trouveEnchereButton.setText("Trouve");
+						trouveEnchereButton.setDisable(false);						
+					}
+				});
 				updateServerAnswer("Debut de la phase de reflexion");
 			}
 			else {
@@ -592,7 +600,6 @@ public class Client extends Application {
 		case Protocole.VALIDATION:
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				updateServerAnswer("Enchere validee");
-				trouveEnchereButton.setDisable(true);
 				tuEnchere = false;				
 			}
 			else {
@@ -625,7 +632,8 @@ public class Client extends Application {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
 				updateServerAnswer("Fin des encheres");
-
+				trouveEnchereButton.setDisable(true);
+				coupTextField.setDisable(true);
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
 					solutionTextArea.setText("Joueur Actif "+user);
@@ -650,7 +658,10 @@ public class Client extends Application {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
 				if (!user.equals(userName)) {
-					updateServerAnswer(user+" a propose une solution");
+					updateServerAnswer(user+" a propose la solution suivante");
+				}
+				else {
+					updateServerAnswer("Vous avez propose la solution suivante");
 				}
 				attenteStatutSolution = true;
 				updateServerAnswer("debug : debut animation");

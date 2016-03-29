@@ -87,7 +87,7 @@ public class Protocole {
 
 	/**
 	 * Envoie une requete d'ENCHERE au serveur
-	 * @param username l'utilisateur qui enchere
+	 * @param userName l'utilisateur qui enchere
 	 * @param coups le nombre de coups de l'enchere
 	 * @param out PrintStream du serveur
 	 */
@@ -97,7 +97,7 @@ public class Protocole {
 
 	/**
 	 * Envoie une requete de SOLUTION au serveur
-	 * @param username l'utilisateur qui envoie sa solution
+	 * @param userName l'utilisateur qui envoie sa solution
 	 * @param deplacements la solution du joueur
 	 * @param out PrintStream du serveur
 	 */

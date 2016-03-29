@@ -117,7 +117,7 @@ public class Case {
 
 	/**
 	 * Modifie le bord bas de la case
-	 * @param haut le boolean representant le mur, true pour un mur
+	 * @param bas le boolean representant le mur, true pour un mur
 	 */
 	private void setBas(boolean bas) {
 		this.bas = bas;
@@ -125,7 +125,7 @@ public class Case {
 
 	/**
 	 * Modifie le bord gauche de la case
-	 * @param haut le boolean representant le mur, true pour un mur
+	 * @param gauche le boolean representant le mur, true pour un mur
 	 */
 	private void setGauche(boolean gauche) {
 		this.gauche = gauche;
@@ -133,7 +133,7 @@ public class Case {
 
 	/**
 	 * Modifie le bord droit de la case
-	 * @param haut le boolean representant le mur, true pour un mur
+	 * @param droit le boolean representant le mur, true pour un mur
 	 */
 	private void setDroit(boolean droit) {
 		this.droit = droit;

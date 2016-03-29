@@ -46,7 +46,7 @@ public class Bilan {
 	/**
 	 * Permet de remplir la liste des scores a transmettre a l'interface
 	 * graphique du client
-	 * @return une ObservableList<Score> contenant les scores de la session
+	 * @return une ObservableList contenant les scores de la session
 	 * courante
 	 */
 	public ObservableList<Score> getScoreSheet() {

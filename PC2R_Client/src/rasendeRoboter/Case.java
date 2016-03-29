@@ -5,15 +5,50 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
+/**
+ * 
+ * @author Ladislas Halifa
+ * Classe representant une Case du plateau, contient les informations sur les 
+ * murs de cette Case, la presence d'un robot ou non sur cette case ainsi
+ * que le fait que cette case soit une cible ou non
+ */
 public class Case {
+	/**
+	 * le rendu graphique de la case
+	 */
 	BorderPane caseGUI;
+	
+	/**
+	 * la couleur de la cible si cette case est une cible (R, B, J, V)
+	 */
 	String cible;
+	
+	/**
+	 * la couleur du robot present sur la case si elle en contient un (R, B, J, V)
+	 */
 	String robot;
+	
+	/**
+	 * Presence d'un mur sur le bord haut de la case
+	 */
 	private boolean haut;
+	/**
+	 * Presence d'un mur sur le bord bas de la case
+	 */
 	private boolean bas;
+	/**
+	 * Presence d'un mur sur le bord gauche  de la case
+	 */
 	private boolean gauche;
+	/**
+	 * Presence d'un mur sur le bord droit de la case
+	 */
 	private boolean droit;
 
+	/**
+	 * Constructeur, initialise une case vide ne contenant pas de murs, 
+	 * et n'etant pas marquee comme cible
+	 */
 	public Case() {
 		caseGUI = new BorderPane();
 		cible = "";
@@ -24,64 +59,113 @@ public class Case {
 		droit = false;
 	}
 
+	/**
+	 * Verifie si la case a un mur en haut
+	 * @return true si la case a un mur en haut, false sinon
+	 */
 	public boolean isHaut() {
 		return haut;
 	}
 
-	public void setHaut(boolean haut) {
-		this.haut = haut;
-	}
-
+	/**
+	 * Verifie si la case a un mur en bas
+	 * @return true si la case a un mur en bas, false sinon
+	 */
 	public boolean isBas() {
 		return bas;
 	}
 
-	public void setBas(boolean bas) {
-		this.bas = bas;
-	}
-
+	/**
+	 * Verifie si la case a un mur a gauche
+	 * @return true si la case a un mur a gauche, false sinon
+	 */
 	public boolean isGauche() {
 		return gauche;
 	}
 
-	public void setGauche(boolean gauche) {
-		this.gauche = gauche;
-	}
-
+	/**
+	 * Verifie si la case a un mur a droite
+	 * @return true si la case a un mur a droite, false sinon
+	 */
 	public boolean isDroit() {
 		return droit;
 	}
 
-	public void setDroit(boolean droit) {
-		this.droit = droit;
-	}
-
+	/**
+	 *  Verifie si la case est une cible
+	 * @return true si la case est une cible, false sinon
+	 */
 	public boolean isCible() {
 		return !cible.equals("");
 	}
-	
+
+	/**
+	 * Verifie si la case est vide, i.e ne contient pas de robot
+	 * @return true si la case est vide, false sinon
+	 */
+	public boolean isVide() {
+		return robot.equals("");
+	}
+
+	/**
+	 * Modifie le bord haut de la case
+	 * @param haut le boolean representant le mur, true pour un mur
+	 */
+	private void setHaut(boolean haut) {
+		this.haut = haut;
+	}
+
+	/**
+	 * Modifie le bord bas de la case
+	 * @param haut le boolean representant le mur, true pour un mur
+	 */
+	private void setBas(boolean bas) {
+		this.bas = bas;
+	}
+
+	/**
+	 * Modifie le bord gauche de la case
+	 * @param haut le boolean representant le mur, true pour un mur
+	 */
+	private void setGauche(boolean gauche) {
+		this.gauche = gauche;
+	}
+
+	/**
+	 * Modifie le bord droit de la case
+	 * @param haut le boolean representant le mur, true pour un mur
+	 */
+	private void setDroit(boolean droit) {
+		this.droit = droit;
+	}
+
+	/**
+	 * Permet de marquer la case courante comme une cible
+	 * @param cible la couleur de la cible (R, B, J, V)
+	 */
 	public void setCible(String cible) {
 		this.cible = cible;
 	}
 
-	public boolean isVide() {
-		return robot.equals("");
-	}
-	
+	/**
+	 * Permet de positionner un robot sur la case
+	 * @param robot la couleur du robot (R, B, J, V)
+	 */
 	public void setRobot(String robot) {
 		this.robot = robot;
 	}
 
-
-	public boolean caseAdjacente() {
-		return (gauche && haut) || (gauche && bas) 
-				|| (droit && haut) || (bas && droit);
+	/**
+	 * Retire le robot de la case
+	 */
+	public void enleverRobot() {
+		robot = "";
 	}
 
-	public boolean hasWall() {
-		return gauche || droit || haut || bas;
-	}
-
+	/**
+	 * Detruit tout les murs de la case, la demarque si elle etait une cible,
+	 * et la vide de son robot si elle en contenait un
+	 */
 	public void reset() {
 		robot = "";
 		cible = "";
@@ -91,6 +175,10 @@ public class Case {
 		droit = false;
 	}
 
+	/**
+	 * Construit un mur de la case
+	 * @param mur lettre representant le mur a construire
+	 */
 	protected void buildWall(String mur) {
 		if (mur.equals("H")) {
 			setHaut(true);
@@ -104,62 +192,57 @@ public class Case {
 		else if (mur.equals("D")) {
 			setDroit(true);
 		}	
+		else {
+			System.err.println("Case.buildWall - je ne dois pas passer ici");
+		}
 	}
 
-	public BorderPane getPane() {
-		return caseGUI;
-	}
-
-	public BorderPane render() {
-		caseGUI.getChildren().clear();
-		if (!cible.equals("")) 
-			displayCible();
-		if (!robot.equals(""))
-			displayRobot();
-		if (isBas())
-			botWall();
-		if (isHaut())
-			topWall();
-		if (isDroit())
-			rightWall();
-		if (isGauche())
-			leftWall();
-		return caseGUI;
-	}
-
-	private void leftWall() {
+	/**
+	 * Construit l'affichage du mur gauche
+	 */
+	private void buildLeftWall() {
 		Pane left = new Pane();
 		left.setStyle("-fx-background-color: #000000;");
 		left.setPrefSize(3.0, 15.0);
 		caseGUI.setLeft(left);
-
+	
 	}
 
-	private void rightWall() {
+	/**
+	 * Construit l'affichage du mur droit
+	 */
+	private void buildRightWall() {
 		Pane right = new Pane();
 		right.setStyle("-fx-background-color: #000000;");
 		right.setPrefSize(3.0, 15.0);
 		caseGUI.setRight(right);
 	}
 
-	private void topWall() {
+	/**
+	 * Construit l'affichage du mur haut
+	 */
+	private void buildTopWall() {
 		Pane top = new Pane();
 		top.setStyle("-fx-background-color: #000000;");
 		top.setPrefSize(15.0, 3.0);
 		caseGUI.setTop(top);
 	}
 
-	private void botWall() {
+	/**
+	 * Construit l'affichage du mur bas
+	 */
+	private void buildBotWall() {
 		Pane bot = new Pane();
 		bot.setStyle("-fx-background-color: #000000;");
 		bot.setPrefSize(15.0, 3.0);
 		caseGUI.setBottom(bot);
 	}
-	
-	public void enleverRobot() {
-		robot = "";
-	}
 
+	/**
+	 * Genere le code permettant d'afficher le robot sur la case, si la case
+	 * contient aussi une cible, genere a la place le code permettant d'afficher
+	 * a la fois le robot et la cible
+	 */
 	public void displayRobot() {
 		Pane l = new Pane();
 		Label ll;
@@ -204,9 +287,13 @@ public class Case {
 			}
 			caseGUI.setCenter(ll);
 		}
-
+	
 	}
 
+	/**
+	 * Genere le code permettant d'afficher une cible sur la case, si la case
+	 * contient aussi un robot, la methode ne fait rien du tout
+	 */
 	public void displayCible() {
 		Label l = new Label(" X ");
 		if (robot.equals("")) {
@@ -230,6 +317,27 @@ public class Case {
 			l.setStyle("-fx-background-color: #FFFFFF; -fx-font-weight: bold; -fx-font-size: 20px;");
 			caseGUI.setCenter(l);
 		}
+	}
+
+	/**
+	 * Construit l'affichage de la case
+	 * @return le BorderPane de la case
+	 */
+	public BorderPane render() {
+		caseGUI.getChildren().clear();
+		if (!cible.equals("")) 
+			displayCible();
+		if (!robot.equals(""))
+			displayRobot();
+		if (isBas())
+			buildBotWall();
+		if (isHaut())
+			buildTopWall();
+		if (isDroit())
+			buildRightWall();
+		if (isGauche())
+			buildLeftWall();
+		return caseGUI;
 	}
 
 }

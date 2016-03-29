@@ -11,40 +11,87 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import rasendeRoboter.Bilan.Score;
 
+/**
+ * 
+ * @author Ladislas Halifa
+ * Controlleur de la vue Client
+ */
 public class ClientController {
+	/**
+	 * Conteneur principal
+	 */
 	@FXML private BorderPane mainFrame;
+	
+	/**
+	 * zone de saisie du chat
+	 */
 	@FXML private TextArea sendChatTextArea;
+	
+	/**
+	 * zone d'affichage des messages du chat
+	 */
 	@FXML private TextArea chatTextArea;
+	
+	/**
+	 * zone d'affichage de l'adresse du serveur
+	 */
 	@FXML private Label hostAdressLabel;
+	
+
 	@FXML private Label version;
+	
+	/**
+	 * Bouton de deconnexion
+	 */
 	@FXML private Button logoutButton;
+	
+	/**
+	 * zone d'affichage du plateau de jeu
+	 */
 	@FXML private GridPane plateauGrid;
-	@FXML
-    private Button trouveEnchereButton;
+	
+	/**
+	 * Bouton pour Encherir ou annonce que l'on a trouve une solution
+	 */
+	@FXML private Button trouveEnchereButton;
 
-    @FXML
-    private TextField coupTextField;
-    @FXML
-    private Label errorLabel;
+	/**
+	 * zone de saisie du nombre de coups
+	 */
+	@FXML private TextField coupTextField;
     
-    @FXML
-    private Label tourLabel;
+	/**
+	 * zone d'affichage d'erreur sur la saisie d'un nombre de coup
+	 */
+	@FXML private Label errorLabel;
     
-    @FXML
-    private TableView<Score> scoreTableView;
+	/**
+	 * zone d'affichage du numero du tour actuel
+	 */
+    @FXML private Label tourLabel;
     
-    @FXML
-    private TextField solutionTextField;
+    /**
+     * zone d'affichage des score
+     */
+    @FXML private TableView<Score> scoreTableView;
     
-    @FXML
-    private TextArea solutionTextArea;
+    /**
+     * zone de saisie et d'affichage d'une solution en cours de saisie
+     */
+    @FXML private TextArea solutionTextArea;
     
-    @FXML
-    private Button solutionButton;
+    /**
+     * Bouton pour soumettre une solution
+     */
+    @FXML private Button solutionButton;
 
-    @FXML
-    private TextArea serverAnswer;
+    /**
+     * Zone d'affichage des messages recus
+     */
+    @FXML private TextArea serverAnswer;
     
-    @FXML
-    private VBox solutionVBox;
+    /**
+     * Conteneur de la zone de saisie d'une solution
+     */
+    @FXML private VBox solutionVBox;
 }

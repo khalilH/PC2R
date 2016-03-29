@@ -2,6 +2,12 @@ package rasendeRoboter;
 
 import java.io.PrintStream;
 
+/**
+ * 
+ * @author Ladislas Halifa
+ * Cette classe contient les commandes du Protocole ainsi que des methodes pour
+ * envoyer des requete au serveur
+ */
 public class Protocole {
 
 	public static final int PORT = 2016;
@@ -41,42 +47,84 @@ public class Protocole {
 	
 	public static final String SOLUTION = "SOLUTION";
 
+	/**
+	 * Envoie une requete de deconnexion au serveur
+	 * @param username l'utilisateur qui se deconnecte
+	 * @param out PrintStream du serveur
+	 */
 	public static void disconnect(String username, PrintStream out) {
 		send(SORT, username, out);
 	}
 
+	/**
+	 * Envoie une requete de connexion au serveur
+	 * @param username l'utilisateur qui se connecte
+	 * @param out PrintStream du serveur
+	 */
 	public static void connect(String username, PrintStream out) {
 		send(CONNEXION, username, out);
 	}
 
+	/**
+	 * Envoie une requete de chat au serveur
+	 * @param username l'utilisateur envoyant un message
+	 * @param message le message a envoyer
+	 * @param out PrintStream du serveur
+	 */
 	public static void sendChat(String username, String message, PrintStream out) {
 		send(SEND_CHAT, username, message, out);
 	}
 	
+	/**
+	 * Envoie une requete de TROUVE au serveur
+	 * @param username l'utilisateur annoncant qu'il a une solution
+	 * @param coups le nombre de coups de la solution
+	 * @param out PrintStream du serveur
+	 */
 	public static void sendTrouve(String username, String coups, PrintStream out) {
 		send(TROUVE, username, coups, out);
 	}
 
+	/**
+	 * Envoie une requete d'ENCHERE au serveur
+	 * @param username l'utilisateur qui enchere
+	 * @param coups le nombre de coups de l'enchere
+	 * @param out PrintStream du serveur
+	 */
 	public static void sendEnchere(String userName, String coups, PrintStream out) {
 		send(ENCHERE, userName, coups, out);
 	}
 
+	/**
+	 * Envoie une requete de SOLUTION au serveur
+	 * @param username l'utilisateur qui envoie sa solution
+	 * @param deplacements la solution du joueur
+	 * @param out PrintStream du serveur
+	 */
 	public static void sendSolution(String userName, String deplacements, PrintStream out) {
 		send(SOLUTION, userName, deplacements, out);
 	}
 
 
+	/**
+	 * Genere une requete a partir d'une commande et d'un seul parametre
+	 * @param commande la commande de la requete
+	 * @param param1 le parametre de la requete
+	 * @param out
+	 */
 	private static void send(String commande, String param1, PrintStream out){
 		out.print(commande+"/"+param1+"/\n");
 	}
 
+	/**
+	 * Genere une requete a partir d'une commande et de deux parametres
+	 * @param commande la commande de la requete
+	 * @param param1 le premier parametre
+	 * @param param2 le second parametre
+	 * @param out
+	 */
 	private static void send(String commande, String param1, String param2, PrintStream out){
 		out.print(commande+"/"+param1+"/"+param2+"/\n");
 	}
-
-
-
-
-	//TODO rajouter le reste
 
 }

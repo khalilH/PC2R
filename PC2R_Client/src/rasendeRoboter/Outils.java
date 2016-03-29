@@ -5,15 +5,66 @@ import java.util.ArrayList;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
+/**
+ * 
+ * @author Ladislas Halifa
+ * Cette classe contient des methodes statiques utilisees pour verifier
+ * que certains parametres sont bien formes
+ */
 public class Outils {
 	
-	public static boolean checkUsername(String username) {
+	/**
+	 * Permet d'extraire la commande d'une requete
+	 * @param reponse une requete
+	 * @return la commande d'une requete
+	 */
+	public static String getCommandeName(String reponse) {
+		return reponse.split("/")[0];
+	}
+
+	/**
+	 * Permet d'extraire le premier parametre d'une requete
+	 * @param reponse une requete
+	 * @return le premier parametre d'une requete s'il existe, null sinon
+	 */
+	public static String getFirstArg(String reponse) {
+		String[] cmd = reponse.split("/");
+		if (cmd.length > 1)
+			return cmd[1];
+		else
+			return null;
+	}
+
+	/**
+	 * Permet d'extraire le second parametre d'une requete
+	 * @param reponse une requete
+	 * @return le second parametre d'une requete s'il existe, null sinon
+	 */
+	public static String getSecondArg(String reponse) {
+		String[] cmd = reponse.split("/");
+		if (cmd.length > 2)
+			return cmd[2];
+		else
+			return null;
+	}
+
+	/**
+	 * Verifie qu'un nom d'utilisateur valide
+	 * @param username le nom d'utilisateur a tester
+	 * @return true si le pseudo est valide, false sinon
+	 */
+	private static boolean checkUsername(String username) {
 		if (username == null || username.equals(""))
 			return false;
 		return username.matches("\\w+");
 	}
 	
-	public static boolean checkHost(String host) {
+	/**
+	 * Verifie que l'adresse IPv4 du serveur est valide
+	 * @param host l'adresse a tester
+	 * @return true si l'adresse est valide, false sinon 
+	 */
+	private static boolean checkHost(String host) {
 		if (host == null)
 			return false;
 		if (host.equals("localhost")) {
@@ -33,17 +84,19 @@ public class Outils {
 		return false;
 	}
 	
-	public static boolean isValidSolution(String deplacements) {
-		if (deplacements == null || deplacements.equals(""))
-			return false;
-		return deplacements.matches("([RBJV][HBGD])+");
-	}
-	
+	/**
+	 * Verifie a la fois si le nom d'utilisateur et l'adresse du serveur sont
+	 * valides
+	 * @param username le nom d'utilisateur
+	 * @param host l'adresse du serveur
+	 * @param actionTarget Node sur lequel afficher le message d'erreur
+	 * @return
+	 */
 	public static boolean checkHostAndCheckUsername(
 			String username, String host, Text actionTarget) {
 		if (!checkUsername(username)) {
 			actionTarget.setFill(Color.FIREBRICK);
-			actionTarget.setText("UserName non valide");
+			actionTarget.setText("Caracteres alphanumeriques seulement");
 			return false;
 		}
 		if (!checkHost(host)) {
@@ -53,27 +106,24 @@ public class Outils {
 		}
 		return true;
 	}
-	
-	public static String getCommandeName(String reponse) {
-		return reponse.split("/")[0];
+
+	/**
+	 * Verifie qu'une solution d'un joueur est bien composee d'une serie de 
+	 * deplacements legaux
+	 * @param deplacements la solution du joueur
+	 * @return true si la solution est valide, false sinon
+	 */
+	public static boolean isValidSolution(String deplacements) {
+		if (deplacements == null || deplacements.equals(""))
+			return false;
+		return deplacements.matches("([RBJV][HBGD])+");
 	}
 	
-	public static String getFirstArg(String reponse) {
-		String[] cmd = reponse.split("/");
-		if (cmd.length > 1)
-			return cmd[1];
-		else
-			return null;
-	}
-	
-	public static String getSecondArg(String reponse) {
-		String[] cmd = reponse.split("/");
-		if (cmd.length > 2)
-			return cmd[2];
-		else
-			return null;
-	}
-	
+	/**
+	 * Permet d'obtenir une serie de deplacements a partir d'une solution
+	 * @param deplacements la solution d'un joueur
+	 * @return une liste contenant la serie de deplacements
+	 */
 	public static ArrayList<String> getCoups(String deplacements) {
 		ArrayList<String> coups = new ArrayList<>();
 		while (deplacements.length() > 1) {

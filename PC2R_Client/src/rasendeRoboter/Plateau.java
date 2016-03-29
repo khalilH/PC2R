@@ -2,32 +2,195 @@ package rasendeRoboter;
 
 import java.awt.Point;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
-import javafx.scene.layout.BorderPane;
-
+/**
+ * @author Ladislas Halifa 
+ * Cette classe permet de representer l'etat d'un plateau ainsi qu'une enigme.
+ */
 public class Plateau {
 	private Case[][] plateau;
+	/**
+	 * L'enigme actuelle du plateau
+	 */
 	private Enigme enigme;
-	private Point cible;
+	/**
+	 * Liste associant la couleur d'un robot representee par un String,
+	 *  avec sa position courante dans le plateau representee par un Point
+	 */
 	private HashMap<String, Point> robots;
-	/* penser a garder un plateau original */
-	/* voir si je met une Enigme ici */
 
-	public Plateau() {
+	/**
+	 * Initialise une instance de Plateau, sans enigme
+	 * @param description decrit l'etat du plateau pour une session, compose
+	 * d'une suite de mur
+	 */
+	public Plateau(String description) {
 		plateau = new Case[16][16];
 		for (int i=0; i < plateau.length; i++) {
 			for (int j=0; j<plateau.length; j++) {
 				plateau[i][j] = new Case();
 			}
 		}
+		enigme = null;
 		robots = new HashMap<String,Point>();
-	}
-	
-	public Plateau(String description) {
-		this();
 		decoderString(description);
 	}
 
+	/**
+	 * Getter pour obtenir la case (i,j) du plateau
+	 * @param i la ligne de la case
+	 * @param j la colonne de la case
+	 * @return une instance de Case
+	 */
+	public Case getCase(int i, int j) {
+		return plateau[i][j];
+	}
+
+	/**
+	 * Permet d'obtenir la position d'un robot
+	 * @param color la couleur du robot (R, B, J, V)
+	 * @return un Point contenant la ligne et la colonne de la position du robot
+	 */
+	public Point getPositionRobot(String color) {
+		return robots.get(color);
+	}
+
+	/**
+	 * Getter pour la ligne de la position d'un robot 
+	 * @param color la couleur du robot (R, B, J, V)
+	 * @return un entier compris entre 0 et 15
+	 */
+	public int getRobotX(String color) {
+		return robots.get(color).x;
+	}
+
+	/**
+	 * Getter pour la colonne de la position d'un robot 
+	 * @param color la couleur du robot (R, B, J, V)
+	 * @return un entier compris entre 0 et 15
+	 */
+	public int getRobotY(String color) {
+		return robots.get(color).y;
+	}
+
+	/**
+	 * Prepare le plateau avec les positions des robots et de la cible d'une
+	 * enigme donne
+	 * @param enigme une instance d'enigme
+	 */
+	public void setEnigme(Enigme enigme) {
+		this.enigme = enigme;
+		Point cible = enigme.getCiblePosition();
+		plateau[cible.x][cible.y].setCible(enigme.getCibleColor());
+		placerRobot();
+	}
+
+	/**
+	 * Permet de placer les robots a leurs positions indiquees par l'enigme
+	 */
+	private void placerRobot() {
+		robots.put("R", new Point(enigme.getRouge()));
+		robots.put("B", new Point(enigme.getBleu()));
+		robots.put("J", new Point(enigme.getJaune()));
+		robots.put("V", new Point(enigme.getVert()));
+		plateau[getRobotX("R")][getRobotY("R")].setRobot("R");
+		plateau[getRobotX("B")][getRobotY("B")].setRobot("B");
+		plateau[getRobotX("J")][getRobotY("J")].setRobot("J");
+		plateau[getRobotX("V")][getRobotY("V")].setRobot("V");
+	}
+
+	/**
+	 * Permet de reinitialiser l'etat du plateau en remettant les robots a
+	 * leurs position initiales
+	 */
+	public void initPositionsRobots() {
+		for(Entry<String, Point> e : robots.entrySet()) {
+			System.out.println(e.getKey()+" "+e.getValue().toString());
+			plateau[e.getValue().x][e.getValue().y].enleverRobot();
+		}
+		placerRobot();
+	}
+
+	/**
+	 * Effectue un deplacement a partir d'un coup
+	 * @param coup le deplacement a effectue constitue de deux lettres, la 
+	 * premiere represente la couleur du robot (R, B, J, V), 
+	 * la deuxieme la direction du deplacement (H, B, G, D)
+	 * @return true si le coup a fait deplacer le robot d'une case, false sinon
+	 */
+	public boolean move(String coup) {
+		boolean hasMove = false;
+		String color = coup.substring(0, 1);
+		String direction = coup.substring(1, 2);
+		Point p = getPositionRobot(color);
+		if (p != null) {
+			switch (direction) {
+			case "G":
+				if (p.y != 0) {
+					if (!plateau[p.x][p.y].isGauche() && !plateau[p.x][p.y-1].isDroit() && 
+							plateau[p.x][p.y-1].isVide()) {
+						plateau[p.x][p.y].enleverRobot();
+						p.setLocation(p.x, p.y-1);
+						plateau[p.x][p.y].setRobot(color);
+						robots.put(color, p);
+						hasMove = true;
+					}
+				}
+				break;
+			case "D":
+				if (p.y != 15) {
+					if (!plateau[p.x][p.y].isDroit() && !plateau[p.x][p.y+1].isGauche() && 
+							plateau[p.x][p.y+1].isVide()) {
+						plateau[p.x][p.y].enleverRobot();
+						p.setLocation(p.x, p.y+1);
+						plateau[p.x][p.y].setRobot(color);
+						robots.put(color, p);
+						hasMove = true;
+					}
+				}
+				break;
+			case "H":
+				if (p.x != 0) {
+					if (!plateau[p.x][p.y].isHaut() && !plateau[p.x-1][p.y].isBas() && 
+							plateau[p.x-1][p.y].isVide()) {
+						plateau[p.x][p.y].enleverRobot();
+						p.setLocation(p.x-1, p.y);
+						plateau[p.x][p.y].setRobot(color);
+						robots.put(color, p);
+						hasMove = true;
+					}
+				}
+				break;
+			case "B":
+				if (p.x != 15) {
+					if (!plateau[p.x][p.y].isBas() && !plateau[p.x+1][p.y].isHaut() && 
+							plateau[p.x+1][p.y].isVide()) {
+						plateau[p.x][p.y].enleverRobot();
+						p.setLocation(p.x+1, p.y);
+						plateau[p.x][p.y].setRobot(color);
+						robots.put(color, p);
+						hasMove = true;
+					}
+				}
+				break;
+			default:
+				System.err.println("move : je ne dois pas passer ici");
+				break;
+			}
+		}
+		else {
+			System.err.println("move : je ne dois pas passer ici");
+		}
+		return hasMove;
+	}
+
+	/**
+	 * Parse une chaine de caractere decrivant un plateau pour construire
+	 * les murs du plateau de jeu 
+	 * @param description decrit l'etat du plateau pour une session, compose
+	 * d'une suite de mur
+	 */
 	public void decoderString(String description) {
 		String tmp = description.replaceAll("\\)\\(", "\\);\\(");
 		String tmpTab[] = tmp.split(";");
@@ -41,114 +204,9 @@ public class Plateau {
 		}
 	}
 
-	public void initPositionsRobots() {
-		robots.clear();
-	}
-	
-	private void placerRobot() {
-		initPositionsRobots();
-		robots.put("R", enigme.getRouge());
-		robots.put("B", enigme.getBleu());
-		robots.put("J", enigme.getJaune());
-		robots.put("V", enigme.getVert());
-		plateau[getRobotX("R")][getRobotY("R")].setRobot("R");
-		plateau[getRobotX("B")][getRobotY("B")].setRobot("B");
-		plateau[getRobotX("J")][getRobotY("J")].setRobot("J");
-		plateau[getRobotX("V")][getRobotY("V")].setRobot("V");
-	}
-
-	public void setEnigme(Enigme enigme) {
-		this.enigme = enigme;
-		cible = enigme.getCiblePosition();
-		plateau[cible.x][cible.y].setCible(enigme.getCibleColor());
-		placerRobot();
-	}
-
-	public Point getPositionRobot(String color) {
-		return robots.get(color);
-	}
-
-	public boolean move(String coup) {
-		boolean hasMove = false;
-		String color = coup.substring(0, 1);
-		String direction = coup.substring(1, 2);
-		Point p = getPositionRobot(color);
-		switch (direction) {
-		case "G":
-			if (p.y != 0) {
-				if (!plateau[p.x][p.y].isGauche() && !plateau[p.x][p.y-1].isDroit() && 
-						plateau[p.x][p.y-1].isVide()) {
-					plateau[p.x][p.y].enleverRobot();
-					p.setLocation(p.x, p.y-1);
-					plateau[p.x][p.y].setRobot(color);
-					robots.put(color, p);
-					hasMove = true;
-				}
-			}
-			break;
-		case "D":
-			if (p.y != 15) {
-				if (!plateau[p.x][p.y].isDroit() && !plateau[p.x][p.y+1].isGauche() && 
-						plateau[p.x][p.y+1].isVide()) {
-					plateau[p.x][p.y].enleverRobot();
-					p.setLocation(p.x, p.y+1);
-					plateau[p.x][p.y].setRobot(color);
-					robots.put(color, p);
-					hasMove = true;
-				}
-			}
-			break;
-		case "H":
-			if (p.x != 0) {
-				if (!plateau[p.x][p.y].isHaut() && !plateau[p.x-1][p.y].isBas() && 
-						plateau[p.x-1][p.y].isVide()) {
-					plateau[p.x][p.y].enleverRobot();
-					p.setLocation(p.x-1, p.y);
-					plateau[p.x][p.y].setRobot(color);
-					robots.put(color, p);
-					hasMove = true;
-				}
-			}
-			break;
-		case "B":
-			if (p.x != 15) {
-				if (!plateau[p.x][p.y].isBas() && !plateau[p.x+1][p.y].isHaut() && 
-						plateau[p.x+1][p.y].isVide()) {
-					plateau[p.x][p.y].enleverRobot();
-					p.setLocation(p.x+1, p.y);
-					plateau[p.x][p.y].setRobot(color);
-					robots.put(color, p);
-					hasMove = true;
-				}
-			}
-			break;
-		default:
-			System.err.println("move : je ne dois pas passer ici");
-			break;
-		}
-		return hasMove;
-	}
-
-	public int getRobotX(String color) {
-		return robots.get(color).x;
-	}
-
-	public int getRobotY(String color) {
-		return robots.get(color).y;
-	}
-
-	public Enigme getEnigme() {
-		return enigme;
-	}
-
-	public Case getCase(int i, int j) {
-		return plateau[i][j];
-	}
-
-	public BorderPane getPane(int i, int j) {
-		return plateau[i][j].getPane();
-	}
-
+	/**
+	 * Permet de "detruire" tout les murs du plateau
+	 */
 	public void reset() {
 		for (int i=0; i < plateau.length; i++) {
 			for (int j=0; j<plateau.length; j++) {
@@ -157,12 +215,15 @@ public class Plateau {
 		}
 	}
 
+	/**
+	 * Redefinition de la methode toString
+	 * @return la chaine de caracteres d'un plateau
+	 */
 	public String toString() {
 		String ret = "";
 		for (int i=0; i < plateau.length; i++) {
 			for (int j=0; j<plateau.length; j++) {
 				Case c = plateau[i][j];
-				if (c.hasWall()) {
 					if (c.isBas())
 						ret += "("+i+","+j+",B)\n";
 					if (c.isHaut())
@@ -171,7 +232,6 @@ public class Plateau {
 						ret += "("+i+","+j+",G)\n";
 					if (c.isDroit())
 						ret += "("+i+","+j+",D)\n";
-				}
 			}
 		}
 		return ret;

@@ -6,23 +6,36 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 
+/**
+ * 
+ * @author Ladislas Halifa
+ * Controlleur de la vue Login
+ */
 public class LoginController {
 
-	
-	
-    @FXML
-    private TextField userTextField;
+	/**
+	 * zone de saisie du nom d'utilisateur
+	 */
+    @FXML private TextField userTextField;
 
-    @FXML
-    private Button loginButton;
+    /**
+     * bouton de connexiont
+     */
+    @FXML private Button loginButton;
 
-    @FXML
-    private TextField hostTextField;
+    /**
+     * zone de saisie de l'adresse du serveur
+     */
+    @FXML private TextField hostTextField;
 
-    @FXML
-    private GridPane mainFrame;
+    /**
+     * Conteneur principal
+     */
+    @FXML private GridPane mainFrame;
     
-    @FXML
-    private Text errorMessageText;
+    /**
+     * zone d'affichage d'un message d'erreur
+     */
+    @FXML private Text errorMessageText;
 
 }

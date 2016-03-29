@@ -41,11 +41,15 @@ import rasendeRoboter.Phase;
 import rasendeRoboter.Plateau;
 import rasendeRoboter.Protocole;
 
+/**
+ * 
+ * @author Ladislas Halifa
+ * Classe Principale du Client
+ */
 public class Client extends Application {
 
 	private static final String LOGIN_SCREEN_UI = "Login.fxml";
 	private static final String GAME_SCREEN_UI = "Game.fxml";
-
 
 	/* Client stuff */
 	private String userName, host;
@@ -100,11 +104,13 @@ public class Client extends Application {
 		initLoginGUI(primaryStage);
 	}
 
+	/**
+	 * Initialise la fenetre de connexion
+	 */
 	public void initLoginGUI(Stage stage) {
 		if (root != null) {
 			root.getChildren().clear();
 		}
-
 		try {
 			GridPane rootLogin = (GridPane) FXMLLoader.load(getClass().getResource(LOGIN_SCREEN_UI));
 			Button btn = (Button) rootLogin.lookup("#loginButton");
@@ -137,8 +143,6 @@ public class Client extends Application {
 			root.getChildren().add(rootLogin);
 			if (scene == null)
 				scene = new Scene(root);
-			//			stage.setMinWidth(400);
-			//			stage.setMinHeight(300);
 			stage.setScene(scene);
 			stage.centerOnScreen();
 			stage.setTitle("Rasende Roboter Launcher");
@@ -149,6 +153,13 @@ public class Client extends Application {
 
 	}
 
+	/**
+	 * Essaie de se connecter sur un serveur
+	 * @param username le nom d'utilisateur choisi
+	 * @param host l'adresse du serveur
+	 * @param actionTarget le label permettant d'afficher un message d'erreur
+	 * @return la socket si la connexion est reussie, null sinon
+	 */
 	public Socket connexion(String username, String host, Text actionTarget)  {
 		actionTarget.setFill(Color.FIREBRICK);
 		boolean ok = Outils.checkHostAndCheckUsername(username, host, actionTarget);
@@ -162,23 +173,15 @@ public class Client extends Application {
 					this.out = new PrintStream(socket.getOutputStream(), true);
 				}
 				Protocole.connect(userName, out);
-
-				//				TODO decommenter pour gestion BIENVENUE ou login non dispo
-				this.receiver = new Receive();
-				receiver.start();
-				/************************************************************/
-				/************************************************************/
-				/*String serverAnswer = in.readLine();
+				String serverAnswer = in.readLine();
 				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
-
 					this.receiver = new Receive();
 					receiver.start();
 				}
 				else {
+					actionTarget.setText(username+" deja utilise");
 					return null;
-				}*/
-				/**************************************************************/
-				/************************************************************/
+				}
 			} catch (UnknownHostException e) {
 				actionTarget.setText(e.getMessage());
 				return null;
@@ -190,6 +193,9 @@ public class Client extends Application {
 		return socket;
 	}
 
+	/**
+	 * initialisation des differents Noeuds JavaFX
+	 */
 	@SuppressWarnings("unchecked")
 	public void initInternalNodes() {
 		if (root != null) {
@@ -202,8 +208,7 @@ public class Client extends Application {
 			trouveEnchereButton = (Button) root.lookup("#trouveEnchereButton");
 			errorLabel = (Label) root.lookup("#errorLabel");
 			tourLabel = (Label) root.lookup("#tourLabel");
-			Object tmp = root.lookup("#scoreTableView");
-			scoreTableView = (TableView<Score>) tmp;
+			scoreTableView = (TableView<Bilan.Score>) root.lookup("#scoreTableView");
 			TableColumn<Score,String> userCol = 
 					new TableColumn<Score,String>("Username");
 			userCol.setMinWidth(150);
@@ -223,7 +228,11 @@ public class Client extends Application {
 		}
 	}
 
+	/**
+	 * ajout des EventHandler 
+	 */
 	public void installEventHandler() {
+		/* taper Entree pour envoyer message */
 		sendChatTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
@@ -237,12 +246,14 @@ public class Client extends Application {
 				}
 			}
 		});
+		/* bouton de deconnexion */
 		logoutButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 			}
 		});
+		/*bouto pour encherir */
 		trouveEnchereButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -284,6 +295,7 @@ public class Client extends Application {
 				}
 			}
 		});
+		/* bouton pour envoyer une solution */
 		solutionButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 
 			@Override
@@ -307,6 +319,7 @@ public class Client extends Application {
 				//				}
 			}
 		});
+		/* saisie d'une solution */
 		solutionTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
 			@Override
@@ -385,6 +398,9 @@ public class Client extends Application {
 		});
 	}
 
+	/**
+	 * initialise la fenetre principale du client
+	 */
 	public void initClientGUI(Stage stage) {
 		if (root != null) {
 			root.getChildren().clear();
@@ -400,6 +416,7 @@ public class Client extends Application {
 					if(out != null) {
 						Protocole.disconnect(userName, out);
 						try {
+							socket.shutdownInput();
 							socket.shutdownOutput();
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -407,22 +424,17 @@ public class Client extends Application {
 					}
 				}
 			});
-			/* debut traitement */
 
 			serverAnswer.appendText("Bienvenue "+userName+"\n");
 			Label hostAdressLabel = (Label) game.lookup("#hostAdressLabel");
 			hostAdressLabel.setText(host);
 			bilan = new Bilan();
 
-			/* fin traitement */
-
 			if (scene == null)
 				scene = new Scene(root);
 
-			//			stage.setMinWidth(1204);
 			stage.setWidth(1150);
 			stage.setHeight(680);
-			//			stage.setMinHeight(680);
 			stage.setScene(scene);
 			stage.setTitle("Rasende Roboter Client");
 			stage.centerOnScreen();
@@ -430,9 +442,11 @@ public class Client extends Application {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
+	/**
+	 * Mise a jour plateau statique 
+	 */
 	public void updatePlateau(){
 		Platform.runLater( new Runnable() {
 			@Override
@@ -454,6 +468,9 @@ public class Client extends Application {
 		});
 	}
 
+	/**
+	 * mise a jour plateau dynamique
+	 */
 	public void updatePlateauAnim(){
 		BorderPane caseGUI;
 		plateauGrid.setGridLinesVisible(false);
@@ -470,6 +487,10 @@ public class Client extends Application {
 		plateauGrid.setGridLinesVisible(true);
 	}
 
+	/**
+	 * Fonction principale de traitement d'une requete du serveur
+	 * @param reponse la requete du serveur
+	 */
 	public void decoderReponseServer(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
 		String user, message, data, enigme;
@@ -561,6 +582,7 @@ public class Client extends Application {
 				updateServerAnswer("Fin de la phase de reflexion");
 				updateServerAnswer("Debut de la phase d'enchere");
 				updateTrouveEnchereButton("Encherir");
+				trouveEnchereButton.setDisable(true);
 				lastEnchere = Integer.MAX_VALUE;
 			}
 			else {
@@ -654,7 +676,8 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Solution refusee");
-				//TODO clean plateau
+				plateau.initPositionsRobots();
+				updatePlateau();
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
 				}
@@ -723,9 +746,7 @@ public class Client extends Application {
 			currentSolution = "";
 			break;
 		case "RESET":
-			updateServerAnswer("reset du plateau !!!");
-			plateau.setEnigme(this.enigme);
-			//TODO gerer clean du plateau
+			plateau.initPositionsRobots();
 			updatePlateau();
 			break;
 		default:
@@ -734,7 +755,10 @@ public class Client extends Application {
 		}
 	}
 
-
+	/**
+	 * Lance l'animation d'une solution
+	 * @param data la solution
+	 */
 	private void startAnimation(String data) {
 		ArrayList<String> coups = Outils.getCoups(data);
 		for(String coup : coups) {
@@ -747,7 +771,7 @@ public class Client extends Application {
 					}
 				});
 				try {
-					Thread.sleep(100);
+					Thread.sleep(150);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -755,6 +779,9 @@ public class Client extends Application {
 		}
 	}
 
+	/**
+	 * mise a jour du tableau de score
+	 */
 	private void updateBilan() {
 		Platform.runLater( new Runnable() {
 			@Override
@@ -766,25 +793,41 @@ public class Client extends Application {
 		});
 	}
 
+	/**
+	 * Modifie le texte du bouton trouveEnchere
+	 * @param text
+	 */
 	private void updateTrouveEnchereButton(String text) {
 		Platform.runLater( new Runnable() {
 			@Override
 			public void run() {
-				trouveEnchereButton.setText("Encherir");
+				trouveEnchereButton.setText(text);
 			}
 		});
 	}
 
+	/**
+	 * Affiche message du serveur 
+	 * @param s
+	 */
 	private void updateServerAnswer(String s) {
 		serverAnswer.appendText(s+"\n");
 	}
 
+	/**
+	 * affiche message du chat
+	 * @param s
+	 */
 	private void updateChat(String s) {
 		chatTextArea.appendText(s+"\n");
 	}
 
 
-
+	/**
+	 * 
+	 * @author Ladislas Halifa
+	 * Classe interne a l'ecoute d'un client
+	 */
 	class Receive extends Service<Void> {
 
 		@Override
@@ -806,16 +849,6 @@ public class Client extends Application {
 				}
 			};
 		}	
-
-		/*	public void pause() {
-			updateServerAnswer("pause de la thread");
-			this.cancel();
-		}
-
-		public void resume() {
-			updateServerAnswer("relance");
-			this.restart();
-		}*/
 	};
 
 

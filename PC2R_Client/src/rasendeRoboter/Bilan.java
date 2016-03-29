@@ -8,20 +8,47 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+/**
+ * @author Ladislas Halifa Cette classe permet de representer l'etat courant 
+ * d'une session de jeu donne par le numero du tour courant et les scores des
+ * joueurs ayant participe a la session de jeu
+ */
 public class Bilan {
+	/**
+	 * le numero du tour courant
+	 */
 	private int tour;
+	/**
+	 * Liste associant un nom d'utilisateur a un score
+	 */
 	private HashMap<String,Integer> scoreSheet;
+	/**
+	 * Liste de Score pour l'interface graphique du client
+	 */
 	private final ObservableList<Score> data = FXCollections.observableArrayList();
 
+	/**
+	 * Initialise le nombre de tour a 0, et instancie un tableau de score vide
+	 */
 	public Bilan() {
 		tour = 0;
 		scoreSheet = new HashMap<>();		
 	}
 
+	/**
+	 * Getter pour le numero du tour courant
+	 * @return le numero du tour courant
+	 */
 	public int getTour() {
 		return tour;
 	}
 
+	/**
+	 * Permet de remplir la liste des scores a transmettre a l'interface
+	 * graphique du client
+	 * @return une ObservableList<Score> contenant les scores de la session
+	 * courante
+	 */
 	public ObservableList<Score> getScoreSheet() {
 		data.clear();
 		for (Entry<String, Integer> e : scoreSheet.entrySet()) {
@@ -30,6 +57,11 @@ public class Bilan {
 		return data;
 	}
 
+	/**
+	 * Permet de parser un bilan
+	 * @param bilan chaine de caractere representant l'etat courant 
+	 * d'une session envoyee par le serveur
+	 */
 	public void decoderBilan(String bilan) {
 		String tmp = bilan.replaceAll("\\(", ";").replaceAll("\\)", "");
 		String bilanSplit[] = tmp.split(";");
@@ -49,56 +81,45 @@ public class Bilan {
 		}
 	}
 
+	/**
+	 * Met a jour le score d'un joueur
+	 * @param user le nom d'utilisateur d'un joueur
+	 * @param score son score
+	 */
 	private void updateScore(String user, int score) {
 		scoreSheet.put(user, score);
 	}
 
-	// TODO a supprimer
-	public void print() {
-		System.out.println("Tour = " +tour);
-		for (String user : scoreSheet.keySet()) {
-			System.out.println("user: "+user+"; score: "+scoreSheet.get(user));
-		}
-		System.out.println("=================================");
-		System.out.println();
-	}
-
-
-
-
+	/**
+	 * @author Ladislas HALIFA
+	 * Cette classe interne permet de representer le score d'un joueur en 
+	 * utilisant des SimpleProperty
+	 */
 	public static class Score {
-
+	
 		private final SimpleStringProperty user;
 		private final SimpleIntegerProperty score;
-
+	
 		private Score(String user, Integer score){
 			this.user = new SimpleStringProperty(user);
 			this.score = new SimpleIntegerProperty(score);
 		}
-
+	
 		public String getUser() {
 			return user.get();
 		}
-
+	
 		public void setUser(String u) {
 			this.user.set(u);
 		}
-
+	
 		public Integer getScore() {
 			return score.get();
 		}
-
+	
 		public void setScore(Integer sc) {
 			score.set(sc);
 		}
 	}
 
-
-	public static void main(String[] args) {
-		Bilan b = new Bilan();
-		b.decoderBilan("6(saucisse,3)(brouette,0)");
-		b.print();
-		b.decoderBilan("7(saucisse,3)(brouette,0)(marco,1)");
-		b.print();
-	}
 }

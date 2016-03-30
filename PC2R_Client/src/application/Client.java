@@ -1,6 +1,7 @@
 package application;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -29,6 +30,8 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -50,6 +53,8 @@ public class Client extends Application {
 
 	private static final String LOGIN_SCREEN_UI = "Login.fxml";
 	private static final String GAME_SCREEN_UI = "Game.fxml";
+	private static final String VICTORY= "victory.mp3";
+	private static final String DEFEAT= "defeat.mp3";
 
 	/* Client stuff */
 	private String userName, host;
@@ -57,6 +62,10 @@ public class Client extends Application {
 	private BufferedReader in;
 	private PrintStream out;
 	private Receive receiver;
+	
+	/* Sound */
+	Media victorySound, defeatSound;;
+	MediaPlayer vMediaPlayer, dMediaPlayer;
 
 	/* Game Components */
 	private Bilan bilan;
@@ -418,6 +427,10 @@ public class Client extends Application {
 			root.getChildren().clear();
 		}
 		try {
+			victorySound = new Media(new File(VICTORY).toURI().toString());
+			vMediaPlayer = new MediaPlayer(victorySound);
+			defeatSound = new Media(new File(DEFEAT).toURI().toString());
+			dMediaPlayer = new MediaPlayer(defeatSound);
 			BorderPane game = (BorderPane) FXMLLoader.load(getClass().getResource(GAME_SCREEN_UI));
 			root.getChildren().add(game);
 			initInternalNodes();
@@ -626,7 +639,7 @@ public class Client extends Application {
 				updateServerAnswer("Fin de la phase de reflexion");
 				updateServerAnswer("Debut de la phase d'enchere");
 				updateTrouveEnchereButton("Encherir");
-				trouveEnchereButton.setDisable(true);
+				trouveEnchereButton.setDisable(false);
 				lastEnchere = Integer.MAX_VALUE;
 			}
 			else {
@@ -729,6 +742,7 @@ public class Client extends Application {
 			break;
 		case Protocole.BONNE:
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
+				vMediaPlayer.play();
 				updateServerAnswer("Solution correcte");
 				updateServerAnswer("Fin du tour");
 				Platform.runLater(new Runnable() {
@@ -749,6 +763,7 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Solution refusee");
+				dMediaPlayer.play();
 				plateau.initPositionsRobots();
 				updatePlateau();
 				if (!user.equals(userName)) {
@@ -848,6 +863,12 @@ public class Client extends Application {
 		case "RESET":
 			plateau.initPositionsRobots();
 			updatePlateau();
+			break;
+		case "V":
+			vMediaPlayer.play();
+			break;
+		case "D":
+			dMediaPlayer.play();
 			break;
 		default:
 			updateServerAnswer("default "+reponse);
@@ -980,6 +1001,7 @@ public class Client extends Application {
 					String recu;
 					try {
 						while ((recu = in.readLine()) != null) {
+							System.out.println("recu "+recu);
 							decoderReponseServer(recu);
 							updateValue(null);
 						}

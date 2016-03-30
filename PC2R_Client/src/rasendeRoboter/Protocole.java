@@ -16,7 +16,7 @@ public class Protocole {
 	public static final String CONNECTE = "CONNECTE";
 	public static final String DECONNEXION = "DECONNEXION";
 	
-	public static final String RECEIVE_CHAT = "RECEIVE";
+	public static final String RECEIVE_CHAT = "CHAT";
 	
 	public static final String SESSION = "SESSION";
 	public static final String VAINQUEUR = "VAINQUEUR";

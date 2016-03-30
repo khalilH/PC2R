@@ -440,6 +440,8 @@ public class Client extends Application {
 				@Override public void handle(WindowEvent t) {
 					if(out != null) {
 						Protocole.disconnect(userName, out);
+						vMediaPlayer.dispose();
+						dMediaPlayer.dispose();
 						try {
 							socket.shutdownInput();
 							socket.shutdownOutput();

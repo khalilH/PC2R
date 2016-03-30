@@ -29,6 +29,14 @@
       <HBox alignment="CENTER_RIGHT" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
             <Label fx:id="version" prefHeight="17.0" prefWidth="1005.0" text="Version 1.0" />
+            <Label fx:id="phaseLabel" minHeight="-Infinity" minWidth="-Infinity" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS">
+               <HBox.margin>
+                  <Insets right="400.0" />
+               </HBox.margin>
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Label>
             <Button fx:id="logoutButton" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Deconnexion" textAlignment="CENTER" />
          </children>
          <padding>
@@ -113,7 +121,7 @@
       </GridPane>
    </center>
    <right>
-      <VBox prefHeight="546.0" prefWidth="251.0" spacing="20.0" BorderPane.alignment="CENTER">
+      <VBox prefHeight="546.0" prefWidth="251.0" spacing="10.0" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </BorderPane.margin>
@@ -130,12 +138,17 @@
                   <Insets />
                </VBox.margin>
             </HBox>
-            <VBox>
+            <VBox spacing="5.0">
                <children>
                   <HBox alignment="CENTER" prefHeight="42.0" prefWidth="251.0" spacing="5.0">
                      <children>
                         <TextField fx:id="coupTextField" prefHeight="25.0" prefWidth="65.0" promptText="Coups" />
                         <Button fx:id="trouveEnchereButton" disable="true" mnemonicParsing="false" prefHeight="25.0" prefWidth="84.0" text="Trouve" textAlignment="CENTER" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label fx:id="nombreCoupsLabel" />
                      </children>
                   </HBox>
                   <HBox alignment="CENTER">
@@ -163,6 +176,11 @@
                         <Button fx:id="solutionButton" disable="true" mnemonicParsing="false" prefHeight="36.0" prefWidth="115.0" text="Submit" />
                      </children>
                   </HBox>
+                  <Label fx:id="coupsSolutionLabel">
+                     <padding>
+                        <Insets left="20.0" />
+                     </padding>
+                  </Label>
                </children>
             </VBox>
             <TextArea fx:id="serverAnswer" editable="false" focusTraversable="false" prefHeight="186.0" prefWidth="251.0" wrapText="true" />

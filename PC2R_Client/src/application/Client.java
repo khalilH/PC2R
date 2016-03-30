@@ -70,6 +70,7 @@ public class Client extends Application {
 	private Phase phase = null;
 	private Plateau plateau;
 	private Enigme enigme;
+	private int proposition = -1;
 
 	/* javaFX Nodes */
 	private AnchorPane root;
@@ -79,6 +80,9 @@ public class Client extends Application {
 	private EventHandler<KeyEvent> filter;
 	private GridPane plateauGrid;
 	private Label errorLabel;
+	private Label nombreCoupsLabel;
+	private Label coupsSolutionLabel;
+	private Label phaseLabel;
 	private TextArea solutionTextArea;
 	private Label tourLabel;
 	private Scene scene;
@@ -225,6 +229,9 @@ public class Client extends Application {
 			solutionButton = (Button) root.lookup("#solutionButton");
 			solutionTextArea = (TextArea) root.lookup("#solutionTextArea");
 			solutionVBox = (VBox) root.lookup("#solutionVBox");
+			nombreCoupsLabel = (Label) root.lookup("#nombreCoupsLabel");
+			coupsSolutionLabel =  (Label) root.lookup("#coupsSolutionLabel");
+			phaseLabel = (Label) root.lookup("#phaseLabel");
 		}
 	}
 
@@ -253,11 +260,11 @@ public class Client extends Application {
 				stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 			}
 		});
-		/*bouto pour encherir */
+		/*bouton pour encherir */
 		trouveEnchereButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				
+
 				if (phase == Phase.REFLEXION) {
 					errorLabel.setText("");
 					String coups = coupTextField.getText();
@@ -265,6 +272,7 @@ public class Client extends Application {
 					if(coups.matches("\\d+")) {
 						errorLabel.setText("");
 						Protocole.sendTrouve(userName, coups, out);
+						proposition = Integer.parseInt(coups);
 						tuAsTrouve = true;
 					}
 					else {
@@ -284,6 +292,7 @@ public class Client extends Application {
 						}
 						else {
 							Protocole.sendEnchere(userName, coups, out);
+							proposition = Integer.parseInt(coups);
 							lastEnchere = enchere;
 							tuEnchere = true;
 						}
@@ -523,6 +532,7 @@ public class Client extends Application {
 			plateau = new Plateau(data);
 			updatePlateau();
 			phase = Phase.ATTENTE_TOUR;
+			updatePhaseLabel(phase);
 			updateServerAnswer("Debut Session");
 			break;
 		case Protocole.VAINQUEUR:
@@ -537,16 +547,22 @@ public class Client extends Application {
 			bilan.decoderBilan(data);
 			updateBilan();
 			// TODO lancer timer
+			plateau.enleverRobots();
 			this.enigme = new Enigme(enigme);
 			plateau.setEnigme(this.enigme);
 			updatePlateau();
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
+				updatePhaseLabel(phase);
 				Platform.runLater(new Runnable() {			
 					@Override
 					public void run() {
 						trouveEnchereButton.setText("Trouve");
-						trouveEnchereButton.setDisable(false);						
+						trouveEnchereButton.setDisable(false);
+						coupTextField.setDisable(false);
+						nombreCoupsLabel.setText("");
+						errorLabel.setText("");
+						coupsSolutionLabel.setText("");
 					}
 				});
 				updateServerAnswer("Debut de la phase de reflexion");
@@ -558,9 +574,20 @@ public class Client extends Application {
 		case Protocole.TU_AS_TROUVE:
 			if (phase == Phase.REFLEXION && tuAsTrouve) {
 				phase = Phase.ENCHERE;
+				updatePhaseLabel(phase);
 				updateServerAnswer("Annonce validee");
 				updateServerAnswer("Fin de la phase de reflexion");
 				updateTrouveEnchereButton("Encherir");
+				if (proposition != -1) {
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							nombreCoupsLabel.setText("Nombre de coups actuel : "+proposition);
+							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);		
+							proposition = -1;
+						}
+					});
+				}
 				tuAsTrouve = false;
 				lastEnchere = Integer.MAX_VALUE;
 			}
@@ -571,11 +598,19 @@ public class Client extends Application {
 		case Protocole.IL_A_TROUVE:
 			if (phase == Phase.REFLEXION) {
 				phase = Phase.ENCHERE;
+				updatePhaseLabel(phase);
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
 				updateServerAnswer(user+" a trouve une solution en "+data+" coups");
 				updateServerAnswer("Fin de la phase de reflexion");
 				updateTrouveEnchereButton("Encherir");
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						nombreCoupsLabel.setText("Nombre de coups actuel : "+data);
+						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+					}
+				});
 				tuAsTrouve = false;
 				lastEnchere = Integer.MAX_VALUE;
 			}
@@ -585,7 +620,8 @@ public class Client extends Application {
 			break;
 		case Protocole.FIN_REFLEXION:
 			if (phase == Phase.REFLEXION) {
-				phase = Phase.ENCHERE;			
+				phase = Phase.ENCHERE;		
+				updatePhaseLabel(phase);
 				updateServerAnswer("Expiration du delai imparti a la reflexion");
 				updateServerAnswer("Fin de la phase de reflexion");
 				updateServerAnswer("Debut de la phase d'enchere");
@@ -600,6 +636,16 @@ public class Client extends Application {
 		case Protocole.VALIDATION:
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				updateServerAnswer("Enchere validee");
+				if (proposition != -1) {
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							nombreCoupsLabel.setText("Enchere actuelle : "+proposition+" coups");
+							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+							proposition = -1;
+						}
+					});
+				}
 				tuEnchere = false;				
 			}
 			else {
@@ -610,6 +656,7 @@ public class Client extends Application {
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Enchere annulee car incoherente avec celle de "+user);
+				proposition = -1;
 				tuEnchere = false;				
 			}
 			else {
@@ -621,6 +668,13 @@ public class Client extends Application {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
 				updateServerAnswer(user+" a encheri avec "+data+" coups");
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						nombreCoupsLabel.setText("Enchere Actuelle : "+data+" coups");
+						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+					}
+				});
 			}
 			else {
 				System.err.println("Je ne dois pas passer ici");
@@ -629,6 +683,7 @@ public class Client extends Application {
 		case Protocole.FIN_ENCHERE:
 			if (phase == Phase.ENCHERE) {
 				phase = Phase.RESOLUTION;
+				updatePhaseLabel(phase);
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
 				updateServerAnswer("Fin des encheres");
@@ -676,8 +731,15 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
 				updateServerAnswer("Solution correcte");
 				updateServerAnswer("Fin du tour");
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						solutionTextArea.setText("");						
+					}
+				});
 				attenteStatutSolution = false;
 				phase = Phase.ATTENTE_TOUR;
+				updatePhaseLabel(phase);
 			}
 			else {
 				System.err.println("Je ne dois pas passer ici");
@@ -691,14 +753,30 @@ public class Client extends Application {
 				updatePlateau();
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
+					solutionTextArea.setText("Joueur Actif "+user);
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							nombreCoupsLabel.setText("");
+							coupsSolutionLabel.setText("");
+						}
+					});
 				}
 				else {
 					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
 					updateServerAnswer("Touches autorisees : r, b, j, v et "
 							+ "fleches directionnelles");
-					solutionButton.setDisable(false);
-					solutionTextArea.setDisable(false);
-					solutionVBox.setVisible(true);
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							solutionTextArea.setText("");
+							solutionButton.setDisable(false);
+							solutionTextArea.setDisable(false);
+							solutionVBox.setVisible(true);
+							coupsSolutionLabel.setText("");
+							nombreCoupsLabel.setText("");		
+						}
+					});
 					taperCouleurRobot = true;
 					currentSolution = "";
 				}
@@ -712,7 +790,14 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION) {
 				updateServerAnswer("Plus de joueurs restants");
 				updateServerAnswer("Fin du tour");
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						solutionTextArea.setText("");						
+					}
+				});
 				phase = Phase.ATTENTE_TOUR;
+				updatePhaseLabel(phase);
 			}
 			else {
 				System.err.println("je ne dois pas passer ici");
@@ -724,6 +809,7 @@ public class Client extends Application {
 				updateServerAnswer("Temps depasse");
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
+					solutionTextArea.setText("Joueur Actif "+user);
 				}
 				else {
 					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
@@ -756,6 +842,9 @@ public class Client extends Application {
 			taperCouleurRobot = true;
 			currentSolution = "";
 			break;
+		case "SHOW":
+			data = Outils.getFirstArg(reponse);
+			startAnimation(data);
 		case "RESET":
 			plateau.initPositionsRobots();
 			updatePlateau();
@@ -772,6 +861,7 @@ public class Client extends Application {
 	 */
 	private void startAnimation(String data) {
 		ArrayList<String> coups = Outils.getCoups(data);
+		int nbCoups = 1;
 		for(String coup : coups) {
 			while (plateau.move(coup)) {
 				Platform.runLater(new Runnable() {
@@ -787,7 +877,23 @@ public class Client extends Application {
 					e.printStackTrace();
 				}
 			}
+			updateNombreCoupsSolution(nbCoups);
+			nbCoups++;
 		}
+	}
+
+	/**
+	 * mise a jour du nombre de coups d'une solution
+	 * @param n le nombre de coups de la solution
+	 */
+	private void updateNombreCoupsSolution(int n) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				coupsSolutionLabel.setText(n+" coups");
+				coupsSolutionLabel.setTextFill(Color.BLUEVIOLET);
+			}
+		});
 	}
 
 	/**
@@ -831,6 +937,30 @@ public class Client extends Application {
 	 */
 	private void updateChat(String s) {
 		chatTextArea.appendText(s+"\n");
+	}
+
+	private void updatePhaseLabel(Phase p) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				String s = "";
+				switch(p) {
+				case ATTENTE_TOUR:
+					s = "ATTENTE DU TOUR SUIVANT";
+					break;
+				case ENCHERE:
+					s = "PHASE D'ENCHERE";
+					break;
+				case REFLEXION:
+					s = "PHASE DE REFLEXION";
+					break;
+				case RESOLUTION:
+					s = "PHASE DE RESOLUTION";
+					break;
+				}
+				phaseLabel.setText(s);
+			}
+		});
 	}
 
 

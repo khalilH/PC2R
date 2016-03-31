@@ -587,6 +587,7 @@ public class Client extends Application {
 			}
 			break;
 		case Protocole.TU_AS_TROUVE:
+			//TODO Attention concurrance
 			if (phase == Phase.REFLEXION && tuAsTrouve) {
 				phase = Phase.ENCHERE;
 				updatePhaseLabel(phase);
@@ -1003,9 +1004,9 @@ public class Client extends Application {
 					String recu;
 					try {
 						while ((recu = in.readLine()) != null) {
-							System.out.println("recu "+recu);
+							System.out.println(recu.length()+" - "+recu);
 							decoderReponseServer(recu);
-							updateValue(null);
+//							updateValue(null);
 						}
 					} catch (IOException e) {
 						e.printStackTrace();

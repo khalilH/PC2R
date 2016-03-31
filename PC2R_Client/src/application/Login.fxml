@@ -29,7 +29,7 @@
 		<Label text="Username" GridPane.rowIndex="1" />
 		<TextField fx:id="userTextField" text="ladi" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 		<Label text="Serveur" GridPane.rowIndex="2" />
-		<TextField fx:id="hostTextField" text="192.168.1.18" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+		<TextField fx:id="hostTextField" text="localhost" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 		<Label text="Welcome" GridPane.columnSpan="2">
 			<font>
 				<Font size="20.0" />

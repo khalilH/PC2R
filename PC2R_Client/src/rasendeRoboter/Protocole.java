@@ -41,7 +41,7 @@ public class Protocole {
 	public static final String SORT = "SORT";
 	public static final String SEND_CHAT = "SEND";
 	
-	public static final String TROUVE = "TROUVE";
+	public static final String TROUVE = "SOLUTION";
 	
 	public static final String ENCHERE = "ENCHERE";
 	

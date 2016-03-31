@@ -28,7 +28,10 @@
    <top>
       <HBox alignment="CENTER_RIGHT" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="version" prefHeight="17.0" prefWidth="1005.0" text="Version 1.0" />
+            <Label fx:id="version" prefHeight="30.0" prefWidth="543.0" text="Version 1.0" textFill="#1707f8">
+               <font>
+                  <Font size="25.0" />
+               </font></Label>
             <Label fx:id="phaseLabel" minHeight="-Infinity" minWidth="-Infinity" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS">
                <HBox.margin>
                   <Insets right="400.0" />

@@ -270,16 +270,16 @@ public class Case {
 			 ll = new Label("X"+cible+"");
 			switch (robot) {
 			case "R":
-				ll.setStyle("-fx-background-color: #DC143C; -fx-font-weight: bold; -fx-font-size: 20px;");
+				ll.setStyle("-fx-background-color: #DC143C; -fx-font-weight: bold; -fx-font-size: 17px;");
 				break;
 			case "B":
-				ll.setStyle("-fx-background-color: #00BFFF; -fx-font-weight: bold; -fx-font-size: 20px;");
+				ll.setStyle("-fx-background-color: #00BFFF; -fx-font-weight: bold; -fx-font-size: 17px;");
 				break;
 			case "J":
-				ll.setStyle("-fx-background-color: #FFFF00; -fx-font-weight: bold; -fx-font-size: 20px;");
+				ll.setStyle("-fx-background-color: #FFFF00; -fx-font-weight: bold; -fx-font-size: 17px;");
 				break;
 			case "V":
-				ll.setStyle("-fx-background-color: #00FF00; -fx-font-weight: bold; -fx-font-size: 20px;");
+				ll.setStyle("-fx-background-color: #00FF00; -fx-font-weight: bold; -fx-font-size: 17px;");
 				break;
 			default:
 				System.err.println("displayRobot : je ne dois pas passer ici");

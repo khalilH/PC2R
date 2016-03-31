@@ -233,17 +233,26 @@ public class Plateau {
 			for (int j=0; j<plateau.length; j++) {
 				Case c = plateau[i][j];
 					if (c.isBas())
-						ret += "("+i+","+j+",B)\n";
+						ret += "("+i+","+j+",B)";
 					if (c.isHaut())
-						ret += "("+i+","+j+",H)\n";
+						ret += "("+i+","+j+",H)";
 					if (c.isGauche())
-						ret += "("+i+","+j+",G)\n";
+						ret += "("+i+","+j+",G)";
 					if (c.isDroit())
-						ret += "("+i+","+j+",D)\n";
+						ret += "("+i+","+j+",D)";
 			}
 		}
 		return ret;
 	}
+	
+	public Enigme getEnigme() {
+		return enigme;
+	}
 
+	
+	public static void main(String[] args) {
+		Plateau p = new Plateau("(0,3,D)(0,11,D)(1,13,G)(1,13,H)");
+		System.out.println(p);
+	}
 
 }

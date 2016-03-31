@@ -17,7 +17,7 @@ public class Enigme {
 	/* robots[2] = jaune */
 	/* robots[3] = vert */
 	/* robots[4] = cible */
-	
+
 	/**
 	 * Tableau de Point
 	 */
@@ -26,7 +26,7 @@ public class Enigme {
 	 * Couleur de la cible (R, B, J, V)
 	 */
 	private String cible;
-	
+
 	/**
 	 * Contructeur d'une Enigme
 	 * @param enigme la description d'une enigme
@@ -42,20 +42,23 @@ public class Enigme {
 		}
 		cible = tmpTab[10];
 	}
-	
+
 	/**
 	 * Redefinition de la methode toString
 	 * @return la chaine de caracteres d'une enigme
 	 */
 	public String toString() {
-		String ret = "";
+		String ret = "(";
 		for (int i = 0; i<robots.length; i++) {
-			ret += "("+robots[i].getX()+","+robots[i].getY()+")\n";
+			if (i == 0)
+				ret += robots[i].x+","+robots[i].y;
+			else
+				ret += ","+robots[i].x+","+robots[i].y;
 		}
-		ret += cible+"\n";
+		ret += ","+cible+")";
 		return ret;
 	}
-	
+
 	/**
 	 * Getter de la position initiale du robot rouge
 	 * @return un Point contenant la ligne et la colonne de la position du robot
@@ -63,7 +66,7 @@ public class Enigme {
 	public Point getRouge() {
 		return robots[0];
 	}
-	
+
 	/**
 	 * Getter de la position initiale du robot bleu
 	 * @return un Point contenant la ligne et la colonne de la position du robot
@@ -71,7 +74,7 @@ public class Enigme {
 	public Point getBleu() {
 		return robots[1];
 	}
-	
+
 	/**
 	 * Getter de la position initiale du robot jaune
 	 * @return un Point contenant la ligne et la colonne de la position du robot
@@ -79,7 +82,7 @@ public class Enigme {
 	public Point getJaune() {
 		return robots[2];
 	}
-	
+
 	/**
 	 * Getter de la position initiale du robot vert
 	 * @return un Point contenant la ligne et la colonne de la position du robot
@@ -87,7 +90,7 @@ public class Enigme {
 	public Point getVert() {
 		return robots[3];
 	}
-	
+
 	/**
 	 * Getter de la position de la cible
 	 * @return Point contenant la ligne et la colonne de la position de la cible
@@ -95,12 +98,17 @@ public class Enigme {
 	public Point getCiblePosition() {
 		return robots[4];
 	}
-	
+
 	/**
 	 * Getter de la couleur de la cible
 	 * @return la couleur de la cible (R, B, J, V) 
 	 */
 	public String getCibleColor() {
 		return cible;
+	}
+
+	public static void main(String[] args) {
+		Enigme n = new Enigme("(13,5,9,12,6,1,5,14,8,5,R)");
+		System.out.println(n.toString());
 	}
 }

@@ -62,7 +62,7 @@ public class Client extends Application {
 	private BufferedReader in;
 	private PrintStream out;
 	private Receive receiver;
-	
+
 	/* Sound */
 	Media victorySound, defeatSound;;
 	MediaPlayer vMediaPlayer, dMediaPlayer;
@@ -92,6 +92,7 @@ public class Client extends Application {
 	private Label nombreCoupsLabel;
 	private Label coupsSolutionLabel;
 	private Label phaseLabel;
+	private Label version;
 	private TextArea solutionTextArea;
 	private Label tourLabel;
 	private Scene scene;
@@ -241,6 +242,7 @@ public class Client extends Application {
 			nombreCoupsLabel = (Label) root.lookup("#nombreCoupsLabel");
 			coupsSolutionLabel =  (Label) root.lookup("#coupsSolutionLabel");
 			phaseLabel = (Label) root.lookup("#phaseLabel");
+			version = (Label) root.lookup("#version");
 		}
 	}
 
@@ -453,6 +455,7 @@ public class Client extends Application {
 			});
 
 			serverAnswer.appendText("Bienvenue "+userName+"\n");
+			version.setText(userName);
 			Label hostAdressLabel = (Label) game.lookup("#hostAdressLabel");
 			hostAdressLabel.setText(host);
 			bilan = new Bilan();
@@ -687,8 +690,8 @@ public class Client extends Application {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						nombreCoupsLabel.setText("Enchere Actuelle : "+data+" coups");
-						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+							nombreCoupsLabel.setText("Enchere Actuelle : "+data+" coups");
+							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
 					}
 				});
 			}
@@ -707,8 +710,8 @@ public class Client extends Application {
 				coupTextField.setDisable(true);
 				if (!user.equals(userName)) {
 					if (!user.equals("")) {
-					updateServerAnswer("Le joueur actif est "+user);
-					solutionTextArea.setText("Joueur Actif "+user);
+						updateServerAnswer("Le joueur actif est "+user);
+						solutionTextArea.setText("Joueur Actif "+user);
 					}
 				}
 				else {
@@ -809,6 +812,7 @@ public class Client extends Application {
 		case Protocole.FIN_RESOLUTION:
 			if (phase == Phase.RESOLUTION) {
 				updateServerAnswer("Plus de joueurs restants");
+				dMediaPlayer.play();
 				updateServerAnswer("Fin du tour");
 				Platform.runLater(new Runnable() {
 					@Override
@@ -881,12 +885,35 @@ public class Client extends Application {
 		}
 	}
 
+	public double interv = 100;
 	/**
 	 * Lance l'animation d'une solution
 	 * @param data la solution
 	 */
 	private void startAnimation(String data) {
 		ArrayList<String> coups = Outils.getCoups(data);
+		interv=100;
+		/* Calcul de l'intervalle d'affichage d'un deplacement */
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				Plateau d = new Plateau(plateau.toString());
+				Enigme ee = new Enigme(plateau.getEnigme().toString());
+				d.setEnigme(ee);
+				
+				int nbMove = 1;
+				for (String coup : coups) {
+					while(d.move(coup)) {
+						nbMove++;
+					}
+				}
+				System.out.println("nbMove = "+nbMove);
+				interv = 14.8*1000/nbMove;
+				System.out.println("interv "+interv);				
+			}
+		});
+		
 		int nbCoups = 1;
 		for(String coup : coups) {
 			while (plateau.move(coup)) {
@@ -898,7 +925,7 @@ public class Client extends Application {
 					}
 				});
 				try {
-					Thread.sleep(150);
+					Thread.sleep((long) interv);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -960,7 +987,7 @@ public class Client extends Application {
 				serverAnswer.appendText(s+"\n");				
 			}
 		});
-		
+
 	}
 
 	/**
@@ -969,13 +996,13 @@ public class Client extends Application {
 	 */
 	private void updateChat(String s) {
 		Platform.runLater(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				chatTextArea.appendText(s+"\n");				
 			}
 		});
-		
+
 	}
 
 	private void updatePhaseLabel(Phase p) {
@@ -1021,7 +1048,7 @@ public class Client extends Application {
 						while ((recu = in.readLine()) != null) {
 							System.out.println(recu.length()+" - "+recu);
 							decoderReponseServer(recu);
-//							updateValue(null);
+							//							updateValue(null);
 						}
 					} catch (IOException e) {
 						e.printStackTrace();

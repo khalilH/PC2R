@@ -1,6 +1,7 @@
 package rasendeRoboter;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -12,7 +13,7 @@ import javafx.scene.text.Text;
  * que certains parametres sont bien formes
  */
 public class Outils {
-	
+
 	/**
 	 * Permet d'extraire la commande d'une requete
 	 * @param reponse une requete
@@ -58,13 +59,13 @@ public class Outils {
 			return false;
 		return username.matches("\\w+");
 	}
-	
+
 	/**
 	 * Verifie que l'adresse IPv4 du serveur est valide
 	 * @param host l'adresse a tester
 	 * @return true si l'adresse est valide, false sinon 
 	 */
-	private static boolean checkHost(String host) {
+	public static boolean checkHost(String host) {
 		if (host == null)
 			return false;
 		if (host.equals("localhost")) {
@@ -83,7 +84,7 @@ public class Outils {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Verifie a la fois si le nom d'utilisateur et l'adresse du serveur sont
 	 * valides
@@ -118,7 +119,7 @@ public class Outils {
 			return false;
 		return deplacements.matches("([RBJV][HBGD])+");
 	}
-	
+
 	/**
 	 * Permet d'obtenir une serie de deplacements a partir d'une solution
 	 * @param deplacements la solution d'un joueur
@@ -132,4 +133,40 @@ public class Outils {
 		}
 		return coups;
 	}
+
+	public static String genererSolution(int monEnchere) {
+		Random rand = new Random(System.currentTimeMillis());
+		String tmp = "";
+		double alea; 
+		for (int i = 0; i < monEnchere-1; i++) {
+			alea = rand.nextDouble();
+			if (alea < 0.25) {
+				tmp += "R";
+			}
+			else if (alea < 0.5) {
+				tmp += "B";
+			}
+			else if (alea < 0.75) {
+				tmp += "J";
+			}
+			else {
+				tmp += "V";
+			}
+			alea = rand.nextDouble();
+			if (alea < 0.25) {
+				tmp += "H";
+			}
+			else if (alea < 0.5) {
+				tmp += "B";
+			}
+			else if (alea < 0.75) {
+				tmp += "G";
+			}
+			else {
+				tmp += "D";
+			}
+		}
+		return tmp;
+	}
 }
+

@@ -53,8 +53,8 @@ public class Client extends Application {
 
 	private static final String LOGIN_SCREEN_UI = "Login.fxml";
 	private static final String GAME_SCREEN_UI = "Game.fxml";
-	private static final String VICTORY= "victory.mp3";
-	private static final String DEFEAT= "defeat.mp3";
+	private static final String VICTORY= "./victory.mp3";
+	private static final String DEFEAT= "./defeat.mp3";
 
 	/* Client stuff */
 	private String userName, host;
@@ -587,7 +587,7 @@ public class Client extends Application {
 			}
 			break;
 		case Protocole.TU_AS_TROUVE:
-			//TODO Attention concurrance
+			//TODO Attention concurrence
 			if (phase == Phase.REFLEXION && tuAsTrouve) {
 				phase = Phase.ENCHERE;
 				updatePhaseLabel(phase);
@@ -706,8 +706,10 @@ public class Client extends Application {
 				trouveEnchereButton.setDisable(true);
 				coupTextField.setDisable(true);
 				if (!user.equals(userName)) {
+					if (!user.equals("")) {
 					updateServerAnswer("Le joueur actif est "+user);
 					solutionTextArea.setText("Joueur Actif "+user);
+					}
 				}
 				else {
 					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
@@ -952,7 +954,13 @@ public class Client extends Application {
 	 * @param s
 	 */
 	private void updateServerAnswer(String s) {
-		serverAnswer.appendText(s+"\n");
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				serverAnswer.appendText(s+"\n");				
+			}
+		});
+		
 	}
 
 	/**
@@ -960,7 +968,14 @@ public class Client extends Application {
 	 * @param s
 	 */
 	private void updateChat(String s) {
-		chatTextArea.appendText(s+"\n");
+		Platform.runLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				chatTextArea.appendText(s+"\n");				
+			}
+		});
+		
 	}
 
 	private void updatePhaseLabel(Phase p) {

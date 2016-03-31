@@ -3,6 +3,7 @@ package rasendeRoboter;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -87,7 +88,12 @@ public class Bilan {
 	 * @param score son score
 	 */
 	private void updateScore(String user, int score) {
-		scoreSheet.put(user, score);
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				scoreSheet.put(user, score);
+			}
+		});
 	}
 
 	/**

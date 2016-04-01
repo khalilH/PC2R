@@ -10,6 +10,7 @@ import java.util.Random;
 
 public class Bot {
 	private static String[] names = {"garen", "mf", "jax", "lux", "darius", "lucian"};
+	public static String myName;
 	@SuppressWarnings("unused")
 	private String userName, host;
 	private Socket socket;
@@ -29,17 +30,26 @@ public class Bot {
 	private boolean attenteStatutSolution = false;
 
 
-	public Bot() {
+	public Bot(String host) {
 		rand = new Random(System.currentTimeMillis()); 
 		userName = names[rand.nextInt(names.length)];
-		System.out.println("Nom d'utilisateur : "+userName);
-		socket = connexion(userName, "localhost");
-
-		// socket = connexion(userName, args[1]);
+		myName = userName;
+		this.host = host;
+		System.out.println("Nom du bot : "+userName);
+		System.err.println("Tentative de connexion sur : "+host);
+		socket = connexion(userName, host);
 	}
 
+	
+	private void attendre(long secondes) {
+		try {
+			Thread.sleep(secondes*1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public Socket connexion(String username, String host) {
-
 		if (Outils.checkHost(host)) {
 			this.host= host;
 			this.userName = username;
@@ -52,7 +62,6 @@ public class Bot {
 				Protocole.connect(userName, out);
 				String serverAnswer = in.readLine();
 				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
-					System.out.println(host+" a accepte connexion");
 					this.receiver = new Receive(in);
 					receiver.start();
 				}
@@ -68,13 +77,17 @@ public class Bot {
 				return null;
 			}
 		}
-		System.out.println("host = "+host);
+		System.out.println("Bot connecte sur "+host);
 		return socket;
 	}
 
 	public static void main(String[] args) {
-		@SuppressWarnings("unused")
-		Bot bot = new Bot();
+		if (args.length < 1) {
+			System.err.println("usage: java -jar bot.jar <host>");
+		}
+		else {
+			new Bot(args[1]);
+		}
 	}
 
 	public void decoderReponseServer(String reponse) {
@@ -87,6 +100,10 @@ public class Bot {
 		case Protocole.CONNECTE:
 			user = Outils.getFirstArg(reponse);
 			System.out.println(user+" s'est connecte");
+			if (Math.random() < 0.5) {
+				String msg = BotData.getMessageBienvenue()+" "+user;
+				Protocole.sendChat(userName, msg, out);
+			}
 			break;
 		case Protocole.DECONNEXION:
 			user = Outils.getFirstArg(reponse);

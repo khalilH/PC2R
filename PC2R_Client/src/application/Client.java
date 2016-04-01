@@ -429,10 +429,10 @@ public class Client extends Application {
 			root.getChildren().clear();
 		}
 		try {
-			victorySound = new Media(new File(VICTORY).toURI().toString());
-			vMediaPlayer = new MediaPlayer(victorySound);
-			defeatSound = new Media(new File(DEFEAT).toURI().toString());
-			dMediaPlayer = new MediaPlayer(defeatSound);
+//			victorySound = new Media(new File(VICTORY).toURI().toString());
+//			vMediaPlayer = new MediaPlayer(victorySound);
+//			defeatSound = new Media(new File(DEFEAT).toURI().toString());
+//			dMediaPlayer = new MediaPlayer(defeatSound);
 			BorderPane game = (BorderPane) FXMLLoader.load(getClass().getResource(GAME_SCREEN_UI));
 			root.getChildren().add(game);
 			initInternalNodes();
@@ -442,8 +442,9 @@ public class Client extends Application {
 				@Override public void handle(WindowEvent t) {
 					if(out != null) {
 						Protocole.disconnect(userName, out);
-						vMediaPlayer.dispose();
-						dMediaPlayer.dispose();
+						//TODO sound
+//						vMediaPlayer.dispose();
+//						dMediaPlayer.dispose();
 						try {
 							socket.shutdownInput();
 							socket.shutdownOutput();

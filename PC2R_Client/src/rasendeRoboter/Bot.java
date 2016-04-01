@@ -35,7 +35,7 @@ public class Bot {
 		myName = userName;
 		this.host = host;
 		System.out.println("Nom du bot : "+userName);
-		System.err.println("Tentative de connexion sur : "+host);
+		System.out.println("Tentative de connexion sur : "+host);
 		socket = connexion(userName, host);
 	}
 
@@ -69,10 +69,10 @@ public class Bot {
 					return null;
 				}
 			} catch (UnknownHostException e) {
-				e.printStackTrace();
+				System.out.println("Connexion refusee");
 				return null;
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.out.println("Connexion refusee");
 				return null;
 			}
 		}
@@ -81,11 +81,11 @@ public class Bot {
 	}
 
 	public static void main(String[] args) {
-		if (args.length < 2) {
+		if (args.length != 1) {
 			System.err.println("usage: java -jar bot.jar <host>");
 		}
 		else {
-			new Bot(args[1]);
+			new Bot(args[0]);
 		}
 	}
 
@@ -383,7 +383,7 @@ public class Bot {
 				while ((recu = in.readLine()) != null) {
 					System.out.println("recu : "+recu);
 					new Runnable() {
-						
+
 						@Override
 						public void run() {
 							decoderReponseServer(recu);							

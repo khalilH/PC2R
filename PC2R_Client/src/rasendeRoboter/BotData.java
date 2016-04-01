@@ -6,11 +6,11 @@ public class BotData {
 	
 	private static final Random rand = new Random(System.currentTimeMillis());
 	
-	public static final String MESSAGE_BIENVENUE = "Salut !";
-	public static final String MESSAGE_BIENVENUE_2 = "Bonjour a tous ";
+	public static final String MESSAGE_BIENVENUE = "Salut";
+	public static final String MESSAGE_BIENVENUE_2 = "Bonjour";
 	public static final String MESSAGE_BIENVENUE_3 = "Yo";
 	public static final String MESSAGE_BIENVENUE_4 = "Hello";
-	public static final String MESSAGE_BIENVENUE_5 = "Hi i'm "+Bot.myName;
+	public static final String MESSAGE_HI = "Hi i'm "+Bot.myName;
 	
 	
 	public static final String[] BIENVENUE = 
@@ -19,7 +19,6 @@ public class BotData {
 				MESSAGE_BIENVENUE_2, 
 				MESSAGE_BIENVENUE_3,
 				MESSAGE_BIENVENUE_4,
-				MESSAGE_BIENVENUE_5
 				};
 	
 	public static final String MESSAGE_OK = "ok";
@@ -59,6 +58,7 @@ public class BotData {
 	public static final String MESSAGE_GG_1 = "Bravo";
 	public static final String MESSAGE_GG_2 = "GG";
 	public static final String MESSAGE_GG_3 = "Pas mal du tout";
+	public static final String MESSAGE_GG_4 = "Pff";
 	
 	public static final String[] GG = 
 		{
@@ -66,6 +66,7 @@ public class BotData {
 				MESSAGE_GG_1,
 				MESSAGE_GG_2, 
 				MESSAGE_GG_3,
+				MESSAGE_GG_4
 		};
 	
 	public static final String MESSAGE_DMG = "Bien essaye";

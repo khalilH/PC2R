@@ -21,7 +21,6 @@ public class Bot {
 
 	private int lastEnchere = Integer.MAX_VALUE;
 	private int monEnchere = 0;
-	private boolean firstMessage = true;
 	private String lastActif;
 
 
@@ -40,7 +39,7 @@ public class Bot {
 		socket = connexion(userName, host);
 	}
 
-	
+
 	private void attendre(long secondes) {
 		try {
 			Thread.sleep(secondes*1000);
@@ -48,7 +47,7 @@ public class Bot {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Socket connexion(String username, String host) {
 		if (Outils.checkHost(host)) {
 			this.host= host;
@@ -61,7 +60,7 @@ public class Bot {
 				}
 				Protocole.connect(userName, out);
 				String serverAnswer = in.readLine();
-				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
+				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) {
 					this.receiver = new Receive(in);
 					receiver.start();
 				}
@@ -99,42 +98,31 @@ public class Bot {
 			break;
 		case Protocole.CONNECTE:
 			user = Outils.getFirstArg(reponse);
-			System.out.println(user+" s'est connecte");
-			if (Math.random() < 0.5) {
+			if (Math.random() < 0.7) {
+				attendre(2);
 				String msg = BotData.getMessageBienvenue()+" "+user;
 				Protocole.sendChat(userName, msg, out);
 			}
 			break;
 		case Protocole.DECONNEXION:
 			user = Outils.getFirstArg(reponse);
-			System.out.println(user+" s'est deconnecte");
 			break;
 		case Protocole.RECEIVE_CHAT:
 			user = Outils.getFirstArg(reponse);
 			message = Outils.getSecondArg(reponse);
+			System.out.println("recu : "+message+" de la part de "+user);
 			if (!user.equals(userName)) {
-				System.out.println(user+" : "+message);
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				Protocole.sendChat(userName, "ok", out);
+				attendre(2);
+				String msg = BotData.getMessageOK();
+				Protocole.sendChat(userName, msg, out);
 			}
 			break;
 		case Protocole.SESSION:
 			data = Outils.getFirstArg(reponse);
 			phase = Phase.ATTENTE_TOUR;
 			System.out.println("Attente tour");
-			if (firstMessage) {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				String msg = BotData.BIENVENUE[rand.nextInt(BotData.BIENVENUE.length)]; 
-				Protocole.sendChat(userName, msg, out);
-			}
+			attendre(2);
+			Protocole.sendChat(userName, "Hi I'm "+userName, out);
 			break;
 		case Protocole.VAINQUEUR:
 			data = Outils.getFirstArg(reponse);
@@ -146,12 +134,11 @@ public class Bot {
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				System.out.println("Phase de reflexion");
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				attendre(4);
+				if (Math.random() < 0.7) {
+					message = BotData.getMessageProvoc();
+					Protocole.sendChat(userName, BotData.MESSAGE_PROVOC, out);
 				}
-				Protocole.sendChat(userName, BotData.MESSAGE_PROVOC, out);
 			}
 			else {
 				System.err.println("Je ne dois pas passer ici");
@@ -165,22 +152,14 @@ public class Bot {
 				System.out.println(user+" a trouve une solution en "+data+" coups");
 				System.out.println("Fin de la phase de reflexion");
 				lastEnchere = Integer.parseInt(data);
-				if (rand.nextDouble() < 0.10) {
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+				if (rand.nextDouble() < 0.15) {
+					attendre(1);
 					Protocole.sendChat(userName, "autant de coups "+user+" ?", out);
 				}
 				double alea = rand.nextDouble();
 				System.out.println("proba enchere "+alea);
 				if (alea < 0.7) {
-					try {
-						Thread.sleep(3000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					attendre(3);
 					int enchere = lastEnchere - rand.nextInt(5) - 2;
 					if (enchere > 0) {
 						tuEnchere = true;
@@ -198,13 +177,9 @@ public class Bot {
 				phase = Phase.ENCHERE;		
 				lastEnchere = Integer.MAX_VALUE;
 				double alea = rand.nextDouble();
-				System.out.println("proba enchere "+alea);
+				System.out.println("proba enchere "+alea+" ref = 95%");
 				if (alea < 0.95) {
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					attendre(2);
 					tuEnchere = true;
 					Protocole.sendEnchere(userName, ""+53, out);
 					monEnchere = 53;
@@ -243,11 +218,7 @@ public class Bot {
 				double alea = rand.nextDouble();
 				System.out.println("proba : "+alea+"  70%");
 				if (alea < 0.7) {
-					try {
-						Thread.sleep(3000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					attendre(3);
 					int enchere = lastEnchere - rand.nextInt(5)-2;
 					System.out.println("lastEnchere = "+lastEnchere);
 					if (enchere > 0) {
@@ -259,6 +230,8 @@ public class Bot {
 				else {
 					if (rand.nextDouble() < 0.5)
 						Protocole.sendChat(userName, "pas mal "+user, out);
+					else
+						Protocole.sendChat(userName, "serieux "+user+" ?", out);
 				}
 			}
 			else {
@@ -281,12 +254,10 @@ public class Bot {
 				else {
 					String sol = Outils.genererSolution(monEnchere);
 					lastActif = userName;
-					System.out.println("solution = "+sol);
-					try {
-						Thread.sleep(10000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					System.out.println("solution a envoye = "+sol);
+					int alea = rand.nextInt(8) + 7;
+					System.out.println("Envoie de la solution dans "+alea+"s");
+					attendre(alea);
 					Protocole.sendSolution(userName, sol, out);
 				}
 			}
@@ -299,10 +270,7 @@ public class Bot {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
 				if (!user.equals(userName)) {
-					System.out.println(user+" a propose la solution suivante");
-				}
-				else {
-					System.out.println("Vous avez propose la solution suivante");
+					System.out.println(user+" a propose la solution suivante : "+data);
 				}
 				attenteStatutSolution = true;
 			}
@@ -316,15 +284,9 @@ public class Bot {
 					Protocole.sendChat(userName, "je ferai mieux la prochaine fois", out);
 				}
 				else {
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					if (rand.nextDouble() < 0.5)
-						Protocole.sendChat(userName, "Bravo "+lastActif+" !", out);
-					else
-						Protocole.sendChat(userName, "Bien joue "+lastActif+" !", out);
+					attendre(1);
+					String msg = BotData.getMessageFelicitation()+" "+lastActif;
+					Protocole.sendChat(userName, msg, out);
 				}
 				System.out.println("Solution correcte");
 				System.out.println("Fin du tour");
@@ -342,26 +304,21 @@ public class Bot {
 				user = Outils.getFirstArg(reponse);
 				System.out.println("Solution refusee");
 				if (!lastActif.equals(userName)) {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					Protocole.sendChat(userName, "Dommage bien tente "+lastActif+" :)", out);
+					attendre(1);
+					String msg = BotData.getMessageBienTente()+" "+lastActif;
+					Protocole.sendChat(userName, msg, out);
 				}
 				if (!user.equals(userName)) {
 					System.out.println("Le joueur actif est "+user);
-					System.out.println("Joueur Actif "+user);
 					lastActif = user;
 				}
 				else {
 					String sol = Outils.genererSolution(monEnchere);
-					System.out.println("solution = "+sol);
-					try {
-						Thread.sleep(10000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					lastActif = userName;
+					System.out.println("solution a envoye = "+sol);
+					int alea = rand.nextInt(8) + 7;
+					System.out.println("Envoie de la solution dans "+alea+"s");
+					attendre(alea);
 					Protocole.sendSolution(userName, sol, out);
 				}
 				attenteStatutSolution = false;
@@ -385,17 +342,19 @@ public class Bot {
 			if (phase == Phase.RESOLUTION) {
 				user = Outils.getFirstArg(reponse);
 				System.out.println("Temps depasse");
+				if (!lastActif.equals(userName)) {
+					Protocole.sendChat(userName, "il faut aller plus vite "+lastActif, out);
+				}
 				if (!user.equals(userName)) {
 					System.out.println("Le joueur actif est "+user);
 				}
 				else {
 					String sol = Outils.genererSolution(monEnchere);
-					System.out.println("solution = "+sol);
-					try {
-						Thread.sleep(10000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					lastActif = userName;
+					System.out.println("solution a envoye = "+sol);
+					int alea = rand.nextInt(8) + 7;
+					System.out.println("Envoie de la solution dans "+alea+"s");
+					attendre(alea);
 					Protocole.sendSolution(userName, sol, out);
 				}
 			}
@@ -409,6 +368,7 @@ public class Bot {
 		}
 	}
 
+	String recu;
 
 	class Receive extends Thread {
 		private BufferedReader in;
@@ -419,11 +379,16 @@ public class Bot {
 
 		@Override
 		public void run() {
-			String recu;
 			try {
 				while ((recu = in.readLine()) != null) {
 					System.out.println("recu : "+recu);
-					decoderReponseServer(recu);
+					new Runnable() {
+						
+						@Override
+						public void run() {
+							decoderReponseServer(recu);							
+						}
+					};
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

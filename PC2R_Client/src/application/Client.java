@@ -247,7 +247,11 @@ public class Client extends Application {
 			version = (Label) root.lookup("#version");
 		}
 	}
-	
+
+	/**
+	 * Initialise les sons utilise par le client
+	 * @return true si les sons sont bien initialises, false sinon
+	 */
 	private boolean initMedia() {
 		try {
 			victorySound = new Media(new File(VICTORY).toURI().toString());
@@ -257,7 +261,7 @@ public class Client extends Application {
 			return true;
 		}
 		catch (MediaException me) {
-			System.err.println("Probleme avec l'initialisation des media");
+			System.err.println("Probleme avec l'initialisation des sons");
 			return false;
 		}
 	}
@@ -455,8 +459,10 @@ public class Client extends Application {
 				@Override public void handle(WindowEvent t) {
 					if(out != null) {
 						Protocole.disconnect(userName, out);
-						vMediaPlayer.dispose();
-						dMediaPlayer.dispose();
+						if (vMediaPlayer!= null)
+							vMediaPlayer.dispose();
+						if (dMediaPlayer!= null)
+							dMediaPlayer.dispose();
 						try {
 							socket.shutdownInput();
 							socket.shutdownOutput();
@@ -559,7 +565,7 @@ public class Client extends Application {
 			traitementReponseServerSync(reponse);
 		}
 	}
-	
+
 	/**
 	 * Fonction de traitement d'une requete du serveur synchronisee
 	 * @param reponse la requete du serveur
@@ -1072,7 +1078,7 @@ public class Client extends Application {
 
 				@Override
 				protected Void call() throws Exception {
-					
+
 					try {
 						while ((recu = in.readLine()) != null) {
 							System.out.println("Reception : "+recu.length()+" - "+recu);

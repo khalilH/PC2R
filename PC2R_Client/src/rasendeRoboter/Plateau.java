@@ -106,7 +106,6 @@ public class Plateau {
 	 */
 	public void initPositionsRobots() {
 		for(Entry<String, Point> e : robots.entrySet()) {
-			System.out.println(e.getKey()+" "+e.getValue().toString());
 			plateau[e.getValue().x][e.getValue().y].enleverRobot();
 		}
 		if (enigme != null)

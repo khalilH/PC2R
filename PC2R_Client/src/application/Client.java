@@ -671,7 +671,7 @@ public class Client extends Application {
 	 * @param reponse la requete du serveur
 	 */
 	public synchronized void traitementReponseServerSync(String reponse) {
-		System.out.println("Traitement : "+reponse);
+		System.out.println("Traitement : "+reponse+"\n\n\n");
 		String commande = Outils.getCommandeName(reponse);
 		String user, data, enigme;
 		switch (commande) {

@@ -1105,7 +1105,7 @@ public class Client extends Application {
 	 * @param s
 	 */
 	private  void updateServerAnswer(String s) {
-		Thread t = new Thread(new Runnable() {
+		(new Runnable() {
 
 			@Override
 			public void run() {
@@ -1115,8 +1115,8 @@ public class Client extends Application {
 				}
 				serverAnswer.appendText(s+"\n");				
 			}
-		});
-		t.start();
+		}).run();
+
 	}
 
 	/**

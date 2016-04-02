@@ -804,6 +804,13 @@ public class Client extends Application {
 		case Protocole.VALIDATION:
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				updateServerAnswer("Enchere validee");
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						nombreCoupsLabel.setText("Meilleure Enchere: "+lastEnchere+" coups");
+						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+					}
+				});
 				tuEnchere = false;				
 			}
 			else {

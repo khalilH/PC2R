@@ -55,8 +55,15 @@ public class Client extends Application {
 
 	private static final String LOGIN_SCREEN_UI = "Login.fxml";
 	private static final String GAME_SCREEN_UI = "Game.fxml";
-	private static final String VICTORY= "./victory.mp3";
-	private static final String DEFEAT= "./defeat.mp3";
+	private static final String CORRECT = "./audio/correct.mp3";
+	private static final String WRONG = "./audio/wrong.mp3";
+	private static final String CHAT = "./audio/chat.mp3";
+	private static final String ENCHERE = "./audio/enchere.mp3";
+	private static final String LOGIN = "./audio/login.mp3";
+	private static final String LOGOUT = "./audio/logout.mp3";
+	private static final String REFLEXION = "./audio/reflexion.mp3";
+	private static final String RESOLUTION = "./audio/resolution.mp3";
+	
 
 	/* Client stuff */
 	private String userName, host;
@@ -65,19 +72,34 @@ public class Client extends Application {
 	private PrintStream out;
 	private Receive receiver;
 
-	/* Sound */
-	Media victorySound = null, defeatSound = null;
-	MediaPlayer vMediaPlayer = null, dMediaPlayer = null;
+	/* Audio */
+	private boolean isAudioReady = false;
+	Media correctSound = null;
+	Media wrongSound = null;
+	Media chatSound = null;
+	Media enchereSound = null;
+	Media loginSound = null;
+	Media logoutSound = null;
+	Media reflexionSound = null;
+	Media resolutionSound = null;
+	MediaPlayer correctMediaPlayer = null;
+	MediaPlayer wrongMediaPlayer = null;
+	MediaPlayer chatMediaPlayer = null;
+	MediaPlayer enchereMediaPlayer = null;
+	MediaPlayer loginMediaPlayer = null;
+	MediaPlayer logoutMediaPlayer = null;
+	MediaPlayer reflexionMediaPlayer = null;
+	MediaPlayer resolutionMediaPlayer = null;
 
-	/* Game Components */
+	/* Game Stuff */
 	private Bilan bilan;
 	private boolean attenteStatutSolution = false;
-	private boolean premierLancement = true;
 	private boolean tuAsTrouve = false;
 	private boolean tuEnchere = false;
 	private boolean taperCouleurRobot= true;
 	private String currentSolution = "";
 	private int lastEnchere = Integer.MAX_VALUE;
+	double interv = 100;
 	private Phase phase = null;
 	private Plateau plateau;
 	private Enigme enigme;
@@ -86,6 +108,7 @@ public class Client extends Application {
 	/* javaFX Nodes */
 	private AnchorPane root;
 	private Button logoutButton;
+	private Button sendChatButton;
 	private Button solutionButton;
 	private Button trouveEnchereButton;
 	private EventHandler<KeyEvent> filter;
@@ -94,6 +117,7 @@ public class Client extends Application {
 	private Label nombreCoupsLabel;
 	private Label coupsSolutionLabel;
 	private Label phaseLabel;
+	private	Label hostAdressLabel;
 	private Label version;
 	private TextArea solutionTextArea;
 	private Label tourLabel;
@@ -105,6 +129,8 @@ public class Client extends Application {
 	private TextField coupTextField;
 	private TableView<Score> scoreTableView;
 	private VBox solutionVBox;
+	
+
 
 
 	public static void main(String[] args) {
@@ -133,29 +159,26 @@ public class Client extends Application {
 			TextField userTextField = (TextField) rootLogin.lookup("#userTextField");
 			TextField hostTextField = (TextField) rootLogin.lookup("#hostTextField");
 			Text errorMessageText= (Text) rootLogin.lookup("#errorMessageText");
-			if (premierLancement) {
-				btn.setOnAction(new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event) {
+			btn.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
+					if (socket != null) 
+						initClientGUI(stage);
+				}
+			});
+			filter = new EventHandler<KeyEvent>() {
+
+				@Override
+				public void handle(KeyEvent event) {
+					if (event.getCode() == KeyCode.ENTER) {
 						socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
 						if (socket != null) 
 							initClientGUI(stage);
 					}
-				});
-				filter = new EventHandler<KeyEvent>() {
-
-					@Override
-					public void handle(KeyEvent event) {
-						if (event.getCode() == KeyCode.ENTER) {
-							socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
-							if (socket != null) 
-								initClientGUI(stage);
-						}
-					}
-				};
-				stage.addEventHandler(KeyEvent.KEY_PRESSED, filter);
-				premierLancement = false;
-			}
+				}
+			};
+			stage.addEventHandler(KeyEvent.KEY_PRESSED, filter);
 			root.getChildren().add(rootLogin);
 			if (scene == null)
 				scene = new Scene(root);
@@ -225,6 +248,8 @@ public class Client extends Application {
 			errorLabel = (Label) root.lookup("#errorLabel");
 			tourLabel = (Label) root.lookup("#tourLabel");
 			scoreTableView = (TableView<Bilan.Score>) root.lookup("#scoreTableView");
+			hostAdressLabel = (Label) root.lookup("#hostAdressLabel");
+
 			TableColumn<Score,String> userCol = 
 					new TableColumn<Score,String>("Username");
 			userCol.setMinWidth(150);
@@ -244,6 +269,7 @@ public class Client extends Application {
 			nombreCoupsLabel = (Label) root.lookup("#nombreCoupsLabel");
 			coupsSolutionLabel =  (Label) root.lookup("#coupsSolutionLabel");
 			phaseLabel = (Label) root.lookup("#phaseLabel");
+			sendChatButton = (Button) root.lookup("#sendChatButton");
 			version = (Label) root.lookup("#version");
 		}
 	}
@@ -254,14 +280,28 @@ public class Client extends Application {
 	 */
 	private boolean initMedia() {
 		try {
-			victorySound = new Media(new File(VICTORY).toURI().toString());
-			vMediaPlayer = new MediaPlayer(victorySound);
-			defeatSound = new Media(new File(DEFEAT).toURI().toString());
-			dMediaPlayer = new MediaPlayer(defeatSound);
+			correctSound = new Media(new File(CORRECT).toURI().toString());
+			wrongSound = new Media(new File(WRONG).toURI().toString());
+			chatSound = new Media(new File(CHAT).toURI().toString());
+			enchereSound = new Media(new File(ENCHERE).toURI().toString());
+			loginSound = new Media(new File(LOGIN).toURI().toString());
+			logoutSound = new Media(new File(LOGOUT).toURI().toString());
+			reflexionSound = new Media(new File(REFLEXION).toURI().toString());
+			resolutionSound = new Media(new File(RESOLUTION).toURI().toString());
+			
+			correctMediaPlayer = new MediaPlayer(correctSound);
+			wrongMediaPlayer = new MediaPlayer(wrongSound);
+			chatMediaPlayer = new MediaPlayer(chatSound);
+			enchereMediaPlayer = new MediaPlayer(enchereSound);
+			loginMediaPlayer = new MediaPlayer(loginSound);
+			logoutMediaPlayer = new MediaPlayer(logoutSound);
+			reflexionMediaPlayer= new MediaPlayer(reflexionSound);
+			resolutionMediaPlayer= new MediaPlayer(resolutionSound);
 			return true;
 		}
 		catch (MediaException me) {
 			System.err.println("Probleme avec l'initialisation des sons");
+			me.printStackTrace();
 			return false;
 		}
 	}
@@ -276,14 +316,17 @@ public class Client extends Application {
 			public void handle(KeyEvent event) {
 				if (event.getCode() == KeyCode.ENTER) {
 					event.consume();
-					String msg = sendChatTextArea.getText();
-					Protocole.sendChat(userName, msg, out);
-					updateChat("Me : "+msg);
-					sendChatTextArea.setText("");
-					sendChatTextArea.setPromptText("Enter a message ...");
+					envoyerMessageChat();
 				}
 			}
 		});
+		sendChatButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				envoyerMessageChat();
+			}
+		});
+
 		/* bouton de deconnexion */
 		logoutButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
@@ -291,51 +334,18 @@ public class Client extends Application {
 				stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 			}
 		});
-		/*bouton pour encherir */
+		/* bouton pour encherir */
 		trouveEnchereButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-
-				if (phase == Phase.REFLEXION) {
-					errorLabel.setText("");
-					String coups = coupTextField.getText();
-					coupTextField.setText("");
-					if(coups.matches("\\d+")) {
-						errorLabel.setText("");
-						Protocole.sendTrouve(userName, coups, out);
-						proposition = Integer.parseInt(coups);
-						tuAsTrouve = true;
-					}
-					else {
-						errorLabel.setText("Veuillez saisir un nombre");
-						errorLabel.setTextFill(Color.FIREBRICK);
-					}
-				}
-				else if (phase == Phase.ENCHERE) {
-					errorLabel.setText("");
-					String coups = coupTextField.getText();
-					coupTextField.setText("");
-					if(coups.matches("\\d+")) {
-						int enchere = Integer.parseInt(coups);
-						if (enchere >= lastEnchere) {
-							errorLabel.setText("Ceci n'est pas une enchere");
-							errorLabel.setTextFill(Color.FIREBRICK);
-						}
-						else {
-							Protocole.sendEnchere(userName, coups, out);
-							proposition = Integer.parseInt(coups);
-							lastEnchere = enchere;
-							tuEnchere = true;
-						}
-					}
-					else {
-						errorLabel.setText("Veuillez saisir un nombre");
-						errorLabel.setTextFill(Color.FIREBRICK);
-					}
-				}
-				else {
-					System.err.println("trouveEnchereButtonEventHandle : Je ne dois pas passer ici");
-				}
+				envoyerEnchere();
+			}
+		});
+		coupTextField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ENTER)
+					envoyerEnchere();
 			}
 		});
 		/* bouton pour envoyer une solution */
@@ -343,23 +353,7 @@ public class Client extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
-				//				if (phase == Phase.RESOLUTION) {
-				String deplacements = solutionTextArea.getText();
-				currentSolution = "";
-				if (Outils.isValidSolution(deplacements)) {
-					Protocole.sendSolution(userName,deplacements,out);
-					solutionTextArea.setText("");
-					solutionButton.setDisable(true);
-					solutionTextArea.setDisable(true);
-					solutionVBox.setVisible(false);
-				}
-				else {
-					System.err.println("isValidSolution : je ne dois pas passer ici");
-				}
-				//				}
-				//				else {
-				//					System.err.println("solutionButtonEventHandle : Je ne dois pas passer ici");
-				//				}
+				envoyerSolution();
 			}
 		});
 		/* saisie d'une solution */
@@ -399,6 +393,9 @@ public class Client extends Application {
 							taperCouleurRobot = !taperCouleurRobot;
 							currentSolution = currentSolution.substring(0, currentSolution.length()-1);
 						}
+						break;
+					case ENTER:
+						envoyerSolution();
 						break;
 					default:
 					}
@@ -442,6 +439,86 @@ public class Client extends Application {
 	}
 
 	/**
+	 * Permet d'envoyer un message de chat
+	 */
+	private void envoyerMessageChat() {
+		String msg = sendChatTextArea.getText();
+		Protocole.sendChat(userName, msg, out);
+		updateChat("Me : "+msg);
+		sendChatTextArea.setText("");
+		sendChatTextArea.setPromptText("Enter a message ...");
+	}
+
+	/**
+	 * Permet d'envoyer une enchere au serveur
+	 */
+	private void envoyerEnchere() {
+		if (phase == Phase.REFLEXION) {
+			errorLabel.setText("");
+			String coups = coupTextField.getText();
+			coupTextField.setText("");
+			if(coups.matches("\\d+")) {
+				errorLabel.setText("");
+				Protocole.sendTrouve(userName, coups, out);
+				proposition = Integer.parseInt(coups);
+				tuAsTrouve = true;
+			}
+			else {
+				errorLabel.setText("Veuillez saisir un nombre");
+				errorLabel.setTextFill(Color.FIREBRICK);
+			}
+		}
+		else if (phase == Phase.ENCHERE) {
+			errorLabel.setText("");
+			String coups = coupTextField.getText();
+			coupTextField.setText("");
+			if(coups.matches("\\d+")) {
+				int enchere = Integer.parseInt(coups);
+				if (enchere >= lastEnchere) {
+					errorLabel.setText("Enchere invalide");
+					errorLabel.setTextFill(Color.FIREBRICK);
+				}
+				else {
+					Protocole.sendEnchere(userName, coups, out);
+					proposition = Integer.parseInt(coups);
+					lastEnchere = enchere;
+					tuEnchere = true;
+				}
+			}
+			else {
+				errorLabel.setText("Veuillez saisir un nombre");
+				errorLabel.setTextFill(Color.FIREBRICK);
+			}
+		}
+		else {
+			System.err.println("[envoyerEnchere] Hors phase reflexion ou enchere");
+		}		
+	}
+
+	/**
+	 * Permet d'envoyer une solution au serveur
+	 */
+	private void envoyerSolution() {
+		if (phase == Phase.RESOLUTION) {
+			String deplacements = solutionTextArea.getText();
+			currentSolution = "";
+			if (Outils.isValidSolution(deplacements)) {
+				Protocole.sendSolution(userName,deplacements,out);
+				solutionTextArea.setText("");
+				solutionButton.setDisable(true);
+				solutionTextArea.setDisable(true);
+				solutionVBox.setVisible(false);
+			}
+			else {
+				System.err.println("[envoyerSolution] solution mal formee");
+			}
+		}
+		else {
+			System.err.println("[envoyerSolution] Hors Phase RESOLUTION");
+		}
+	}
+
+	/**
 	 * initialise la fenetre principale du client
 	 */
 	public void initClientGUI(Stage stage) {
@@ -449,20 +526,29 @@ public class Client extends Application {
 			root.getChildren().clear();
 		}
 		try {
-			boolean media = initMedia();
+
 			BorderPane game = (BorderPane) FXMLLoader.load(getClass().getResource(GAME_SCREEN_UI));
 			root.getChildren().add(game);
+			isAudioReady = initMedia();
 			initInternalNodes();
 			installEventHandler();
+
+			/* Suppression de l'evenement reagissant au KEY_PRESSED de la fenetre de connexion */
 			stage.removeEventHandler(KeyEvent.KEY_PRESSED, filter);
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 				@Override public void handle(WindowEvent t) {
 					if(out != null) {
 						Protocole.disconnect(userName, out);
-						if (vMediaPlayer!= null)
-							vMediaPlayer.dispose();
-						if (dMediaPlayer!= null)
-							dMediaPlayer.dispose();
+						if (isAudioReady) {
+							correctMediaPlayer.dispose();
+							wrongMediaPlayer.dispose();
+							chatMediaPlayer.dispose();
+							enchereMediaPlayer.dispose();
+							loginMediaPlayer.dispose();
+							logoutMediaPlayer.dispose();
+							reflexionMediaPlayer.dispose();
+							resolutionMediaPlayer.dispose();
+						}
 						try {
 							socket.shutdownInput();
 							socket.shutdownOutput();
@@ -474,25 +560,27 @@ public class Client extends Application {
 			});
 
 			serverAnswer.appendText("Bienvenue "+userName+"\n");
-			if (!media) {
-				serverAnswer.appendText("Sons desactives");
+			if (!isAudioReady) {
+				serverAnswer.appendText("Effets sonores non disponibles.\n");
+				serverAnswer.appendText("Lisez le manuel pour resoudre le probleme\n");
 			}
-			version.setText(userName);
-			Label hostAdressLabel = (Label) game.lookup("#hostAdressLabel");
+			version.setText("    "+userName);
 			hostAdressLabel.setText(host);
 			bilan = new Bilan();
 
 			if (scene == null)
 				scene = new Scene(root);
-
+			
 			stage.setWidth(1150);
 			stage.setHeight(680);
+			stage.setResizable(false);
 			stage.setScene(scene);
 			stage.setTitle("Rasende Roboter Client");
 			stage.centerOnScreen();
 			stage.show();
+			
 		} catch(Exception e) {
-			e.printStackTrace();
+			System.err.println("[initClientGUI] "+e.getMessage());
 		}
 	}
 
@@ -511,7 +599,6 @@ public class Client extends Application {
 						caseGUI = plateau.getCase(i, j).render();
 						GridPane.setColumnIndex(caseGUI, j);
 						GridPane.setRowIndex(caseGUI, i);
-
 						plateauGrid.getChildren().add(caseGUI);
 					}
 				}
@@ -521,7 +608,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * mise a jour plateau dynamique
+	 * mise a jour plateau dynamique pour affichage de la solution
 	 */
 	public void updatePlateauAnim(){
 		BorderPane caseGUI;
@@ -550,15 +637,28 @@ public class Client extends Application {
 		case Protocole.RECEIVE_CHAT:
 			user = Outils.getFirstArg(reponse);
 			message = Outils.getSecondArg(reponse);
-			if (!user.equals(userName))
+			if (!user.equals(userName)) {
+				if (isAudioReady) {
+					chatMediaPlayer.play();
+					chatMediaPlayer.seek(Duration.ZERO);
+				}
 				updateChat(user+" : "+message);
+			}
 			break;
 		case Protocole.CONNECTE:
 			user = Outils.getFirstArg(reponse);
+			if (isAudioReady) {
+				loginMediaPlayer.play();
+				loginMediaPlayer.seek(Duration.ZERO);
+			}
 			updateServerAnswer(user+" s'est connecte");
 			break;
 		case Protocole.DECONNEXION:
 			user = Outils.getFirstArg(reponse);
+			if (isAudioReady) {
+				logoutMediaPlayer.play();
+				logoutMediaPlayer.seek(Duration.ZERO);
+			}
 			updateServerAnswer(user+" s'est deconnecte");
 			break;
 		default:
@@ -576,7 +676,6 @@ public class Client extends Application {
 		String user, data, enigme;
 		switch (commande) {
 		case Protocole.BIENVENUE:
-			System.out.println("BIENVENUE");
 			System.err.println("["+Protocole.BIENVENUE+"] Je ne dois pas passer ici");
 			break;
 		case Protocole.SESSION:
@@ -601,13 +700,16 @@ public class Client extends Application {
 			data= Outils.getSecondArg(reponse);
 			bilan.decoderBilan(data);
 			updateBilan();
-			// TODO lancer timer
 			plateau.enleverRobots();
 			this.enigme = new Enigme(enigme);
 			plateau.setEnigme(this.enigme);
 			updatePlateau();
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
+				if (isAudioReady) {
+					reflexionMediaPlayer.play();
+					reflexionMediaPlayer.seek(Duration.ZERO);
+				}
 				updatePhaseLabel(phase);
 				Platform.runLater(new Runnable() {			
 					@Override
@@ -620,7 +722,7 @@ public class Client extends Application {
 						coupsSolutionLabel.setText("");
 					}
 				});
-				updateServerAnswer("Debut de la phase de reflexion");
+				updateServerAnswer("La phase de reflexion commence");
 			}
 			else {
 				System.err.println("["+Protocole.TOUR+"] Je ne dois pas passer ici");
@@ -630,8 +732,12 @@ public class Client extends Application {
 			if (phase == Phase.REFLEXION && tuAsTrouve) {
 				phase = Phase.ENCHERE;
 				updatePhaseLabel(phase);
-				updateServerAnswer("Annonce validee");
-				updateServerAnswer("Fin de la phase de reflexion");
+				updateServerAnswer("Votre annonce est validee !");
+				updateServerAnswer("La phase d'enchere commence");
+				if (isAudioReady) {
+					enchereMediaPlayer.play();
+					enchereMediaPlayer.seek(Duration.ZERO);
+				}
 				updateTrouveEnchereButton("Encherir");
 				if (proposition != -1) {
 					Platform.runLater(new Runnable() {
@@ -656,8 +762,12 @@ public class Client extends Application {
 				updatePhaseLabel(phase);
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
-				updateServerAnswer(user+" a trouve une solution en "+data+" coups");
-				updateServerAnswer("Fin de la phase de reflexion");
+				updateServerAnswer(user+" a trouve une solution en "+data+" coups !");
+				updateServerAnswer("La phase d'enchere commence");
+				if (isAudioReady) {
+					enchereMediaPlayer.play();
+					enchereMediaPlayer.seek(Duration.ZERO);
+				}
 				updateTrouveEnchereButton("Encherir");
 				Platform.runLater(new Runnable() {
 					@Override
@@ -678,8 +788,11 @@ public class Client extends Application {
 				phase = Phase.ENCHERE;		
 				updatePhaseLabel(phase);
 				updateServerAnswer("Expiration du delai imparti a la reflexion");
-				updateServerAnswer("Fin de la phase de reflexion");
-				updateServerAnswer("Debut de la phase d'enchere");
+				if (isAudioReady) {
+					enchereMediaPlayer.play();
+					enchereMediaPlayer.seek(Duration.ZERO);
+				}
+				updateServerAnswer("La phase d'enchere commence");
 				updateTrouveEnchereButton("Encherir");
 				trouveEnchereButton.setDisable(false);
 				lastEnchere = Integer.MAX_VALUE;
@@ -691,16 +804,6 @@ public class Client extends Application {
 		case Protocole.VALIDATION:
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				updateServerAnswer("Enchere validee");
-				if (proposition != -1) {
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							nombreCoupsLabel.setText("Enchere actuelle : "+proposition+" coups");
-							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
-							proposition = -1;
-						}
-					});
-				}
 				tuEnchere = false;				
 			}
 			else {
@@ -726,7 +829,7 @@ public class Client extends Application {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						nombreCoupsLabel.setText("Enchere Actuelle : "+data+" coups");
+						nombreCoupsLabel.setText("Meilleure Enchere: "+data+" coups");
 						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
 					}
 				});
@@ -741,13 +844,16 @@ public class Client extends Application {
 				updatePhaseLabel(phase);
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
-				updateServerAnswer("Fin des encheres");
+				updateServerAnswer("La phase de resolution commence");
+				if (isAudioReady) {
+					resolutionMediaPlayer.play();
+					resolutionMediaPlayer.seek(Duration.ZERO);
+				}
 				trouveEnchereButton.setDisable(true);
 				coupTextField.setDisable(true);
 				if (!user.equals(userName)) {
 					if (!user.equals("")) {
 						updateServerAnswer("Le joueur actif est "+user);
-						solutionTextArea.setText("Joueur Actif "+user);
 					}
 				}
 				else {
@@ -776,9 +882,7 @@ public class Client extends Application {
 					updateServerAnswer("Vous avez propose la solution suivante");
 				}
 				attenteStatutSolution = true;
-				updateServerAnswer("debug : debut animation");
 				startAnimation(data);
-				updateServerAnswer("debug : fin animation");
 			}
 			else {
 				System.err.println("["+Protocole.SA_SOLUTION+"] Je ne dois pas passer ici");
@@ -786,9 +890,11 @@ public class Client extends Application {
 			break;
 		case Protocole.BONNE:
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
-				vMediaPlayer.play();
-				updateServerAnswer("Solution correcte");
-				updateServerAnswer("Fin du tour");
+				if (isAudioReady) {
+					correctMediaPlayer.play();
+					correctMediaPlayer.seek(Duration.ZERO);
+				}
+				updateServerAnswer("Solution correcte, Fin du tour");
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
@@ -807,12 +913,14 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Solution refusee");
-				dMediaPlayer.play();
+				if (isAudioReady) {
+					wrongMediaPlayer.play();
+					wrongMediaPlayer.seek(Duration.ZERO);
+				}
 				plateau.initPositionsRobots();
 				updatePlateau();
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
-					solutionTextArea.setText("Joueur Actif "+user);
 					Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
@@ -847,9 +955,9 @@ public class Client extends Application {
 			break;
 		case Protocole.FIN_RESOLUTION:
 			if (phase == Phase.RESOLUTION) {
-				updateServerAnswer("Plus de joueurs restants");
-				dMediaPlayer.play();
-				updateServerAnswer("Fin du tour");
+				updateServerAnswer("Plus de joueurs restants, Fin du tour");
+				if (wrongMediaPlayer != null)
+				wrongMediaPlayer.play();
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
@@ -865,11 +973,14 @@ public class Client extends Application {
 			break;
 		case Protocole.TROP_LONG:
 			if (phase == Phase.RESOLUTION) {
+				if (isAudioReady) {
+					wrongMediaPlayer.play();
+					wrongMediaPlayer.seek(Duration.ZERO);
+				}
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Temps depasse");
 				if (!user.equals(userName)) {
 					updateServerAnswer("Le joueur actif est "+user);
-					solutionTextArea.setText("Joueur Actif "+user);
 				}
 				else {
 					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
@@ -886,46 +997,19 @@ public class Client extends Application {
 				System.err.println("["+Protocole.TROP_LONG+"] Je ne dois pas passer ici");
 			}
 			break;
-			//TODO proto bidon pour test
-		case "HACK": 
-			updateServerAnswer("Taper votre solution dans la zone ci-dessus");
-			updateServerAnswer("Touches autorisees : r, b, j, v et "
-					+ "fleches directionnelles");
-			solutionButton.setDisable(false);
-			solutionTextArea.setDisable(false);
-			solutionVBox.setVisible(true);
-			taperCouleurRobot = true;
-			currentSolution = "";
-			break;
-		case "SHOW":
-			data = Outils.getFirstArg(reponse);
-			startAnimation(data);
-		case "RESET":
-			plateau.initPositionsRobots();
-			updatePlateau();
-			break;
-		case "V":
-			vMediaPlayer.play();
-			vMediaPlayer.seek(Duration.ZERO);
-			break;
-		case "D":
-			dMediaPlayer.play();
-			dMediaPlayer.seek(Duration.ZERO);
-			break;
 		default:
 			System.err.println("[default] "+reponse);
 			break;
 		}
 	}
 
-	public double interv = 100;
+	
 	/**
 	 * Lance l'animation d'une solution
 	 * @param data la solution
 	 */
 	private void startAnimation(String data) {
 		ArrayList<String> coups = Outils.getCoups(data);
-		interv=100;
 		/* Calcul de l'intervalle d'affichage d'un deplacement */
 		Platform.runLater(new Runnable() {
 
@@ -1013,15 +1097,19 @@ public class Client extends Application {
 	 * Affiche message du serveur 
 	 * @param s
 	 */
-	private void updateServerAnswer(String s) {
-		(new Runnable() {
+	private  void updateServerAnswer(String s) {
+		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
+				//TODO put date
+				if (s == null) {
+					System.out.println("sadsad");
+				}
 				serverAnswer.appendText(s+"\n");				
 			}
-		}).run();
-
+		});
+		t.start();
 	}
 
 	/**
@@ -1030,7 +1118,7 @@ public class Client extends Application {
 	 */
 	private void updateChat(String s) {
 		(new Runnable() {
-
+			//TODO put date
 			@Override
 			public void run() {
 				chatTextArea.appendText(s+"\n");				
@@ -1064,14 +1152,14 @@ public class Client extends Application {
 
 
 
-	String recu;
+
 	/**
 	 * 
 	 * @author Ladislas Halifa
 	 * Classe interne a l'ecoute d'un client
 	 */
 	class Receive extends Service<Void> {
-
+		String recu;
 		@Override
 		protected Task<Void> createTask() {
 			return new Task<Void>() {
@@ -1082,13 +1170,13 @@ public class Client extends Application {
 					try {
 						while ((recu = in.readLine()) != null) {
 							System.out.println("Reception : "+recu.length()+" - "+recu);
-							(new Runnable() {
+							Thread t = new Thread(new Runnable() {
 								@Override
 								public void run() {
 									traitementReponseServeur(recu);									
 								}
-							}).run();
-							System.out.println("HELLO");
+							});
+							t.start();
 							updateValue(null);
 						}
 					} catch (IOException e) {

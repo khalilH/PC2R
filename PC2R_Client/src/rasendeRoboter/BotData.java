@@ -52,7 +52,7 @@ public class BotData {
 				"lucian",
 		};
 
-	public String getName() {
+	public static String getName() {
 		return NAMES[rand.nextInt(NAMES.length)];	
 	}
 

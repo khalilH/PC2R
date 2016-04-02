@@ -9,7 +9,6 @@ import java.net.UnknownHostException;
 import java.util.Random;
 
 public class Bot {
-	private static String[] names = {"garen", "mf", "jax", "lux", "darius", "lucian"};
 	public static String myName;
 	@SuppressWarnings("unused")
 	private String userName, host;
@@ -31,7 +30,7 @@ public class Bot {
 
 	public Bot(String host) {
 		rand = new Random(System.currentTimeMillis()); 
-		userName = names[rand.nextInt(names.length)];
+		userName = BotData.getName();
 		myName = userName;
 		this.host = host;
 		System.out.println("Nom du bot : "+userName);
@@ -89,7 +88,7 @@ public class Bot {
 		}
 	}
 
-	public void decoderReponseServer(String reponse) {
+	public synchronized void decoderReponseServer(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
 		String user, message, data;
 		switch (commande) {
@@ -102,6 +101,12 @@ public class Bot {
 				attendre(2);
 				String msg = BotData.getMessageBienvenue()+" "+user;
 				Protocole.sendChat(userName, msg, out);
+			}
+			if (Math.random() > 0.02) {
+				attendre(2);
+				Protocole.sendChat(userName, BotData.getMessageBye(), out);
+				attendre (1);
+				Protocole.disconnect(userName, out);
 			}
 			break;
 		case Protocole.DECONNEXION:
@@ -382,13 +387,14 @@ public class Bot {
 			try {
 				while ((recu = in.readLine()) != null) {
 					System.out.println("recu : "+recu);
-					new Runnable() {
+					Thread t = new Thread(new Runnable() {
 
 						@Override
 						public void run() {
 							decoderReponseServer(recu);							
 						}
-					};
+					});
+					t.start();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

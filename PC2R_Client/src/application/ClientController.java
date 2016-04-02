@@ -28,6 +28,11 @@ public class ClientController {
 	@FXML private TextArea sendChatTextArea;
 	
 	/**
+	 * Bouton pour envoyer message
+	 */
+	@FXML private Button sendChatButton;
+	
+	/**
 	 * zone d'affichage des messages du chat
 	 */
 	@FXML private TextArea chatTextArea;

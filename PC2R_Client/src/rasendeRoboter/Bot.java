@@ -117,9 +117,12 @@ public class Bot {
 			message = Outils.getSecondArg(reponse);
 			System.out.println("recu : "+message+" de la part de "+user);
 			if (!user.equals(userName)) {
-				attendre(2);
-				String msg = BotData.getMessageOK();
-				Protocole.sendChat(userName, msg, out);
+
+				if (Math.random() < 0.7) {
+					attendre(2);
+					String msg = BotData.getMessageOK();
+					Protocole.sendChat(userName, msg, out);
+				}
 			}
 			break;
 		case Protocole.SESSION:

@@ -63,7 +63,7 @@ public class Client extends Application {
 	private static final String LOGOUT = "./audio/logout.mp3";
 	private static final String REFLEXION = "./audio/reflexion.mp3";
 	private static final String RESOLUTION = "./audio/resolution.mp3";
-	
+
 
 	/* Client stuff */
 	private String userName, host;
@@ -129,7 +129,7 @@ public class Client extends Application {
 	private TextField coupTextField;
 	private TableView<Score> scoreTableView;
 	private VBox solutionVBox;
-	
+
 
 
 
@@ -173,8 +173,9 @@ public class Client extends Application {
 				public void handle(KeyEvent event) {
 					if (event.getCode() == KeyCode.ENTER) {
 						socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
-						if (socket != null) 
+						if (socket != null) {
 							initClientGUI(stage);
+						}
 					}
 				}
 			};
@@ -214,8 +215,8 @@ public class Client extends Application {
 				Protocole.connect(userName, out);
 				String serverAnswer = in.readLine();
 				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
-					this.receiver = new Receive();
-					receiver.start();
+					//					this.receiver = new Receive();
+					//					receiver.start();
 				}
 				else {
 					actionTarget.setText(username+" deja utilise");
@@ -288,7 +289,7 @@ public class Client extends Application {
 			logoutSound = new Media(new File(LOGOUT).toURI().toString());
 			reflexionSound = new Media(new File(REFLEXION).toURI().toString());
 			resolutionSound = new Media(new File(RESOLUTION).toURI().toString());
-			
+
 			correctMediaPlayer = new MediaPlayer(correctSound);
 			wrongMediaPlayer = new MediaPlayer(wrongSound);
 			chatMediaPlayer = new MediaPlayer(chatSound);
@@ -528,11 +529,12 @@ public class Client extends Application {
 		try {
 
 			BorderPane game = (BorderPane) FXMLLoader.load(getClass().getResource(GAME_SCREEN_UI));
-			root.getChildren().add(game);
-			isAudioReady = initMedia();
+			root.getChildren().add(game);		
 			initInternalNodes();
 			installEventHandler();
-
+			this.receiver = new Receive();
+			receiver.start();
+			isAudioReady = initMedia();
 			/* Suppression de l'evenement reagissant au KEY_PRESSED de la fenetre de connexion */
 			stage.removeEventHandler(KeyEvent.KEY_PRESSED, filter);
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -570,7 +572,7 @@ public class Client extends Application {
 
 			if (scene == null)
 				scene = new Scene(root);
-			
+
 			stage.setWidth(1150);
 			stage.setHeight(680);
 			stage.setResizable(false);
@@ -578,7 +580,7 @@ public class Client extends Application {
 			stage.setTitle("Rasende Roboter Client");
 			stage.centerOnScreen();
 			stage.show();
-			
+
 		} catch(Exception e) {
 			System.err.println("[initClientGUI] "+e.getMessage());
 		}
@@ -745,12 +747,13 @@ public class Client extends Application {
 						public void run() {
 							nombreCoupsLabel.setText("Nombre de coups actuel : "+proposition);
 							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);		
-							proposition = -1;
+							
 						}
 					});
 				}
 				tuAsTrouve = false;
-				lastEnchere = Integer.MAX_VALUE;
+				lastEnchere = proposition;
+				proposition = -1;
 			}
 			else {
 				System.err.println("["+Protocole.TU_AS_TROUVE+"] Je ne dois pas passer ici");
@@ -769,6 +772,7 @@ public class Client extends Application {
 					enchereMediaPlayer.seek(Duration.ZERO);
 				}
 				updateTrouveEnchereButton("Encherir");
+				lastEnchere = Integer.parseInt(data);
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
@@ -832,14 +836,18 @@ public class Client extends Application {
 			if (phase == Phase.ENCHERE) {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
+				Integer enchere = Integer.parseInt(data);
 				updateServerAnswer(user+" a encheri avec "+data+" coups");
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						nombreCoupsLabel.setText("Meilleure Enchere: "+data+" coups");
-						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
-					}
-				});
+				if (enchere < lastEnchere) {
+					Platform.runLater(new Runnable() {
+						@Override
+						public void run() {
+							nombreCoupsLabel.setText("Meilleure Enchere: "+data+" coups");
+							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+						}
+					});
+					lastEnchere = enchere;
+				}
 			}
 			else {
 				System.err.println("["+Protocole.NOUVELLE_ENCHERE+"] Je ne dois pas passer ici");
@@ -964,7 +972,7 @@ public class Client extends Application {
 			if (phase == Phase.RESOLUTION) {
 				updateServerAnswer("Plus de joueurs restants, Fin du tour");
 				if (wrongMediaPlayer != null)
-				wrongMediaPlayer.play();
+					wrongMediaPlayer.play();
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
@@ -1010,7 +1018,7 @@ public class Client extends Application {
 		}
 	}
 
-	
+
 	/**
 	 * Lance l'animation d'une solution
 	 * @param data la solution
@@ -1105,18 +1113,13 @@ public class Client extends Application {
 	 * @param s
 	 */
 	private  void updateServerAnswer(String s) {
-		(new Runnable() {
-
+		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
 				//TODO put date
-				if (s == null) {
-					System.out.println("sadsad");
-				}
 				serverAnswer.appendText(s+"\n");				
 			}
-		}).run();
-
+		});
 	}
 
 	/**
@@ -1132,6 +1135,8 @@ public class Client extends Application {
 			}
 		}).run();
 	}
+	
+	
 
 	private void updatePhaseLabel(Phase p) {
 		Platform.runLater(new Runnable() {

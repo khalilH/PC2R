@@ -1,0 +1,12 @@
+resoudre probleme des thread (tous les tej et les ajouter ou ca plante)
+
+chat essayer de le faire marcher quand animation solution
+
+faire attention avec les message du serveur et les 10000 thread
+
+
+Serveur
+
+vraiment tester la deconnexion d'un client, puis reprise session ou lancement new session
+
+???? segfault pendant resolution (y penser)

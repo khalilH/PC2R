@@ -167,7 +167,7 @@ public class Client extends Application {
 				}
 			});
 			Scene scene = new Scene(root);
-			
+
 			stage.setResizable(false);
 			stage.setScene(scene);
 			stage.setTitle("Rasende Roboter Client");
@@ -430,7 +430,7 @@ public class Client extends Application {
 				Protocole.connect(userName, out);
 				String reponse = in.readLine();
 				if (reponse.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
-					
+
 					serverAnswer.appendText("Bienvenue "+userName+"\n");
 					if (!isAudioReady) {
 						serverAnswer.appendText("Effets sonores non disponibles.\n");
@@ -652,7 +652,7 @@ public class Client extends Application {
 			this.plateau.enleverRobots();
 			this.enigme = new Enigme(enigme);
 			this.plateau.setEnigme(this.enigme);
-			
+
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				if (isAudioReady) {
@@ -806,27 +806,29 @@ public class Client extends Application {
 				updatePhaseLabel(phase);
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
-				updateServerAnswer("La phase de resolution commence");
-				if (isAudioReady) {
-					resolutionMediaPlayer.play();
-					resolutionMediaPlayer.seek(Duration.ZERO);
-				}
-				trouveEnchereButton.setDisable(true);
-				coupTextField.setDisable(true);
-				if (!user.equals(userName)) {
-					if (!user.equals("")) {
-						updateServerAnswer("Le joueur actif est "+user);
+				if (!user.equals("null")) {
+					updateServerAnswer("La phase de resolution commence");
+					if (isAudioReady) {
+						resolutionMediaPlayer.play();
+						resolutionMediaPlayer.seek(Duration.ZERO);
 					}
-				}
-				else {
-					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
-					updateServerAnswer("Touches autorisees : r, b, j, v et "
-							+ "fleches directionnelles");
-					solutionButton.setDisable(false);
-					solutionTextArea.setDisable(false);
-					solutionVBox.setVisible(true);
-					taperCouleurRobot = true;
-					currentSolution = "";
+					trouveEnchereButton.setDisable(true);
+					coupTextField.setDisable(true);
+					if (!user.equals(userName)) {
+						if (!user.equals("")) {
+							updateServerAnswer("Le joueur actif est "+user);
+						}
+					}
+					else {
+						updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+						updateServerAnswer("Touches autorisees : r, b, j, v et "
+								+ "fleches directionnelles");
+						solutionButton.setDisable(false);
+						solutionTextArea.setDisable(false);
+						solutionVBox.setVisible(true);
+						taperCouleurRobot = true;
+						currentSolution = "";
+					}
 				}
 			}
 			else {
@@ -1017,7 +1019,7 @@ public class Client extends Application {
 		calendar = Calendar.getInstance();
 		return "["+dateFormat.format(calendar.getTime())+"] ";
 	}
-	
+
 	/**
 	 * mise a jour du tableau de score
 	 */

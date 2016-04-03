@@ -642,6 +642,7 @@ public class Client extends Application {
 			bilan.decoderBilan(data);
 			updateBilan();
 			this.plateau.enleverRobots();
+			updatePlateau();
 			this.enigme = new Enigme(enigme);
 			this.plateau.setEnigme(this.enigme);
 			proposition = -1;
@@ -1126,12 +1127,13 @@ public class Client extends Application {
 	 * @param s le message a afficher
 	 */
 	private  void updateServerAnswer(String s) {
-		(new Runnable() {
+		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				serverAnswer.appendText(s+"\n");				
 			}
-		}).run();
+		});
+		t.start();
 	}
 
 	/**

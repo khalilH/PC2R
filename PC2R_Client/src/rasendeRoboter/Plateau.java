@@ -109,19 +109,21 @@ public class Plateau {
 			plateau[e.getValue().x][e.getValue().y].enleverRobot();
 		}
 		if (enigme != null)
-		placerRobot();
+			placerRobot();
 	}
-	
+
 	public void enleverRobots() {
-		Point cible = enigme.getCiblePosition();
-		plateau[cible.x][cible.y].enleverCible();
+		if (enigme != null) {
+			Point cible = enigme.getCiblePosition();
+			plateau[cible.x][cible.y].enleverCible();
+		}
 		for(Entry<String, Point> e : robots.entrySet()) {
 			System.out.println(e.getKey()+" "+e.getValue().toString());
 			plateau[e.getValue().x][e.getValue().y].enleverRobot();
 		}
 	}
-	
-	
+
+
 
 	/**
 	 * Effectue un deplacement a partir d'un coup
@@ -207,12 +209,12 @@ public class Plateau {
 		String tmpTab[] = tmp.split(";");
 		for (String s : tmpTab) {
 			if (s.length() > 1) {
-			String aux = s.substring(1, s.length()-1);
-			String auxTab[] = aux.split(",");
-			int i = Integer.parseInt(auxTab[0]);
-			int j = Integer.parseInt(auxTab[1]);
-			String mur = auxTab[2];
-			plateau[i][j].buildWall(mur);
+				String aux = s.substring(1, s.length()-1);
+				String auxTab[] = aux.split(",");
+				int i = Integer.parseInt(auxTab[0]);
+				int j = Integer.parseInt(auxTab[1]);
+				String mur = auxTab[2];
+				plateau[i][j].buildWall(mur);
 			}
 		}
 	}
@@ -237,24 +239,24 @@ public class Plateau {
 		for (int i=0; i < plateau.length; i++) {
 			for (int j=0; j<plateau.length; j++) {
 				Case c = plateau[i][j];
-					if (c.isBas())
-						ret += "("+i+","+j+",B)";
-					if (c.isHaut())
-						ret += "("+i+","+j+",H)";
-					if (c.isGauche())
-						ret += "("+i+","+j+",G)";
-					if (c.isDroit())
-						ret += "("+i+","+j+",D)";
+				if (c.isBas())
+					ret += "("+i+","+j+",B)";
+				if (c.isHaut())
+					ret += "("+i+","+j+",H)";
+				if (c.isGauche())
+					ret += "("+i+","+j+",G)";
+				if (c.isDroit())
+					ret += "("+i+","+j+",D)";
 			}
 		}
 		return ret;
 	}
-	
+
 	public Enigme getEnigme() {
 		return enigme;
 	}
 
-	
+
 	public static void main(String[] args) {
 		Plateau p = new Plateau("(0,3,D)(0,11,D)(0,13,B)(1,12,D)(2,5,D)(2,5,B)(2,9,D)(2,9,B)(4,0,B)(4,2,D)(4,2,H)(4,15,H)(5,7,G)(5,7,B)(5,14,G)(5,14,B)(6,1,G)(6,1,H)(6,11,H)(6,11,D)(7,7,G)(7,7,H)(7,8,H)(7,8,D)(8,7,G)(8,7,B)(8,8,B)(8,8,D)(8,5,H)(8,5,D)(9,1,D)(9,1,B)(9,12,D)(9,15,B)(10,4,G)(10,4,B)(11,0,B)(12,9,H)(12,9,G)(13,5,D)(13,5,H)(13,14,G)(13,14,B)(14,3,G)(14,3,H)(14,11,D)(14,11,B)(15,14,G)(15,6,D)");
 		if (Outils.isValidPlateau(p.toString())) {

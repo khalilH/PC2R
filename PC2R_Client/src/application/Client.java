@@ -137,7 +137,12 @@ public class Client extends Application {
 
 
 	public static void main(String[] args) {
+		try {
 		launch(args);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -903,6 +908,7 @@ public class Client extends Application {
 				});
 				phase = Phase.ATTENTE_TOUR;
 				updatePhaseLabel(phase);
+				//TODO desactiver zone envoie solution
 			}
 			else {
 				System.err.println("["+Protocole.FIN_RESOLUTION+"] Je ne dois pas passer ici");

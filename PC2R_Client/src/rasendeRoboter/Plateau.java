@@ -113,10 +113,15 @@ public class Plateau {
 	}
 	
 	public void enleverRobots() {
+		Point cible = enigme.getCiblePosition();
+		plateau[cible.x][cible.y].enleverCible();
 		for(Entry<String, Point> e : robots.entrySet()) {
+			System.out.println(e.getKey()+" "+e.getValue().toString());
 			plateau[e.getValue().x][e.getValue().y].enleverRobot();
 		}
 	}
+	
+	
 
 	/**
 	 * Effectue un deplacement a partir d'un coup

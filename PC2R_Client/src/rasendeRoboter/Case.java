@@ -340,4 +340,8 @@ public class Case {
 		return caseGUI;
 	}
 
+	public void enleverCible() {
+		cible = "";
+	}
+
 }

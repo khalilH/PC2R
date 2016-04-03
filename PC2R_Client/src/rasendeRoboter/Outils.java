@@ -96,13 +96,13 @@ public class Outils {
 	public static boolean checkHostAndCheckUsername(
 			String username, String host, Text actionTarget) {
 		if (!checkUsername(username)) {
+			actionTarget.setText("Pseudo non valide");
 			actionTarget.setFill(Color.FIREBRICK);
-			actionTarget.setText("Caracteres alphanumeriques seulement");
 			return false;
 		}
 		if (!checkHost(host)) {
-			actionTarget.setFill(Color.FIREBRICK);
 			actionTarget.setText("Serveur non valide");
+			actionTarget.setFill(Color.FIREBRICK);
 			return false;
 		}
 		return true;

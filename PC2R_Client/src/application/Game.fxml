@@ -12,26 +12,34 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<BorderPane fx:id="mainFrame" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.ClientController">
+<BorderPane fx:id="mainFrame" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.GameController">
    <bottom>
-      <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="15.0" prefWidth="580.0" BorderPane.alignment="CENTER">
+      <HBox prefHeight="15.0" prefWidth="580.0" spacing="20.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="hostAdressLabel" />
-            <Label text="Connecte sur : ">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </Label>
+            <Label alignment="CENTER" prefHeight="27.0" prefWidth="67.0" text="Username" textAlignment="CENTER" />
+            <TextField fx:id="userTextField" text="ladi" />
+            <Label prefHeight="24.0" prefWidth="51.0" text="Serveur" />
+            <TextField fx:id="hostTextField" text="localhost">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </TextField>
+            <Button fx:id="loginButton" mnemonicParsing="false" text="Connexion" />
+            <HBox alignment="CENTER">
+               <children>
+                  <Text fx:id="errorMessageText" fill="RED">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Text>
+               </children>
+            </HBox>
          </children>
       </HBox>
    </bottom>
    <top>
       <HBox alignment="CENTER_RIGHT" nodeOrientation="LEFT_TO_RIGHT" prefHeight="40.0" prefWidth="600.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="version" prefHeight="30.0" prefWidth="543.0" textFill="#1707f8">
-               <font>
-                  <Font size="25.0" />
-               </font></Label>
             <Label fx:id="phaseLabel" minHeight="-Infinity" minWidth="-Infinity" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS">
                <HBox.margin>
                   <Insets right="400.0" />
@@ -40,7 +48,7 @@
                   <Font name="System Bold" size="21.0" />
                </font>
             </Label>
-            <Button fx:id="logoutButton" alignment="CENTER" contentDisplay="CENTER" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Deconnexion" textAlignment="CENTER" />
+            <Button fx:id="logoutButton" alignment="CENTER" contentDisplay="CENTER" disable="true" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Deconnexion" textAlignment="CENTER" />
          </children>
          <padding>
             <Insets right="10.0" />
@@ -52,10 +60,10 @@
          <bottom>
             <HBox prefHeight="68.0" prefWidth="269.0" BorderPane.alignment="CENTER">
                <children>
-                  <TextArea fx:id="sendChatTextArea" prefHeight="61.0" prefWidth="215.0" promptText="Enter a message ..." wrapText="true" />
+                  <TextArea fx:id="sendChatTextArea" disable="true" prefHeight="61.0" prefWidth="215.0" promptText="Enter a message ..." wrapText="true" />
                   <HBox alignment="BOTTOM_RIGHT" prefHeight="68.0" prefWidth="60.0">
                      <children>
-                        <Button fx:id="sendChatButton" mnemonicParsing="false" prefHeight="112.0" prefWidth="52.0" text="Send">
+                        <Button fx:id="sendChatButton" disable="true" mnemonicParsing="false" prefHeight="112.0" prefWidth="52.0" text="Send">
                            <HBox.margin>
                               <Insets left="5.0" />
                            </HBox.margin>

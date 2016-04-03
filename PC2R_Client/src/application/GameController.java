@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import rasendeRoboter.Bilan.Score;
 
 /**
@@ -16,11 +17,33 @@ import rasendeRoboter.Bilan.Score;
  * @author Ladislas Halifa
  * Controlleur de la vue Client
  */
-public class ClientController {
+public class GameController {
 	/**
 	 * Conteneur principal
 	 */
 	@FXML private BorderPane mainFrame;
+	
+	
+	/**
+	 * zone de saisie du nom d'utilisateur
+	 */
+    @FXML private TextField userTextField;
+
+    /**
+     * bouton de connexiont
+     */
+    @FXML private Button loginButton;
+
+    /**
+     * zone de saisie de l'adresse du serveur
+     */
+    @FXML private TextField hostTextField;
+
+    
+    /**
+     * zone d'affichage d'un message d'erreur
+     */
+    @FXML private Text errorMessageText;
 	
 	/**
 	 * zone de saisie du chat

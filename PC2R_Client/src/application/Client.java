@@ -53,7 +53,6 @@ import rasendeRoboter.Protocole;
  */
 public class Client extends Application {
 
-	private static final String LOGIN_SCREEN_UI = "Login.fxml";
 	private static final String GAME_SCREEN_UI = "Game.fxml";
 	private static final String CORRECT = "./audio/correct.mp3";
 	private static final String WRONG = "./audio/wrong.mp3";
@@ -66,7 +65,7 @@ public class Client extends Application {
 
 
 	/* Client stuff */
-	private String userName, host;
+	private String userName;
 	private Socket socket;
 	private BufferedReader in;
 	private PrintStream out;
@@ -97,6 +96,7 @@ public class Client extends Application {
 	private boolean tuAsTrouve = false;
 	private boolean tuEnchere = false;
 	private boolean taperCouleurRobot= true;
+	private boolean firstEnchere = true;
 	private String currentSolution = "";
 	private int lastEnchere = Integer.MAX_VALUE;
 	double interv = 100;
@@ -107,31 +107,28 @@ public class Client extends Application {
 
 	/* javaFX Nodes */
 	private AnchorPane root;
+	private Button loginButton;
 	private Button logoutButton;
 	private Button sendChatButton;
 	private Button solutionButton;
 	private Button trouveEnchereButton;
-	private EventHandler<KeyEvent> filter;
 	private GridPane plateauGrid;
 	private Label errorLabel;
 	private Label nombreCoupsLabel;
 	private Label coupsSolutionLabel;
 	private Label phaseLabel;
-	private	Label hostAdressLabel;
-	private Label version;
 	private TextArea solutionTextArea;
 	private Label tourLabel;
-	private Scene scene;
 	private Stage stage;
+	private Text errorMessageText;
 	private TextArea serverAnswer;
 	private TextArea chatTextArea;
 	private TextArea sendChatTextArea;
 	private TextField coupTextField;
+	private TextField hostTextField;
+	private TextField userTextField;
 	private TableView<Score> scoreTableView;
 	private VBox solutionVBox;
-
-
-
 
 	public static void main(String[] args) {
 		launch(args);
@@ -143,102 +140,48 @@ public class Client extends Application {
 		if (stage == null) {
 			this.stage = primaryStage;
 		}
-		initLoginGUI(primaryStage);
+		initClientGUI(primaryStage);
 	}
 
 	/**
-	 * Initialise la fenetre de connexion
+	 * initialise la fenetre principale du client
 	 */
-	public void initLoginGUI(Stage stage) {
+	private void initClientGUI(Stage stage) {
 		if (root != null) {
 			root.getChildren().clear();
 		}
 		try {
-			GridPane rootLogin = (GridPane) FXMLLoader.load(getClass().getResource(LOGIN_SCREEN_UI));
-			Button btn = (Button) rootLogin.lookup("#loginButton");
-			TextField userTextField = (TextField) rootLogin.lookup("#userTextField");
-			TextField hostTextField = (TextField) rootLogin.lookup("#hostTextField");
-			Text errorMessageText= (Text) rootLogin.lookup("#errorMessageText");
-			btn.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event) {
-					socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
-					if (socket != null) 
-						initClientGUI(stage);
+			BorderPane game = (BorderPane) FXMLLoader.load(getClass().getResource(GAME_SCREEN_UI));
+			root.getChildren().add(game);		
+			initInternalNodes();
+			isAudioReady = initMedia();
+			installEventHandler();
+			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+				@Override public void handle(WindowEvent t) {
+					deconnexion();
 				}
 			});
-			filter = new EventHandler<KeyEvent>() {
-
-				@Override
-				public void handle(KeyEvent event) {
-					if (event.getCode() == KeyCode.ENTER) {
-						socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
-						if (socket != null) {
-							initClientGUI(stage);
-						}
-					}
-				}
-			};
-			stage.addEventHandler(KeyEvent.KEY_PRESSED, filter);
-			root.getChildren().add(rootLogin);
-			if (scene == null)
-				scene = new Scene(root);
+			Scene scene = new Scene(root);
+			stage.setResizable(false);
 			stage.setScene(scene);
+			stage.setTitle("Rasende Roboter Client");
 			stage.centerOnScreen();
-			stage.setTitle("Rasende Roboter Launcher");
 			stage.show();
 		} catch(Exception e) {
-			e.printStackTrace();
+			System.err.println("[initClientGUI] "+e.getMessage());
 		}
-
-	}
-
-	/**
-	 * Essaie de se connecter sur un serveur
-	 * @param username le nom d'utilisateur choisi
-	 * @param host l'adresse du serveur
-	 * @param actionTarget le label permettant d'afficher un message d'erreur
-	 * @return la socket si la connexion est reussie, null sinon
-	 */
-	public Socket connexion(String username, String host, Text actionTarget)  {
-		actionTarget.setFill(Color.FIREBRICK);
-		boolean ok = Outils.checkHostAndCheckUsername(username, host, actionTarget);
-		if (ok) {
-			this.host= host;
-			this.userName = username;
-			try {
-				if (socket == null) {
-					this.socket = new Socket(host, Protocole.PORT);
-					this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					this.out = new PrintStream(socket.getOutputStream(), true);
-				}
-				Protocole.connect(userName, out);
-				String serverAnswer = in.readLine();
-				if (serverAnswer.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
-					//					this.receiver = new Receive();
-					//					receiver.start();
-				}
-				else {
-					actionTarget.setText(username+" deja utilise");
-					return null;
-				}
-			} catch (UnknownHostException e) {
-				actionTarget.setText(e.getMessage());
-				return null;
-			} catch (IOException e) {
-				actionTarget.setText(e.getMessage());
-				return null;
-			}
-		}
-		return socket;
 	}
 
 	/**
 	 * initialisation des differents Noeuds JavaFX
 	 */
 	@SuppressWarnings("unchecked")
-	public void initInternalNodes() {
+	private void initInternalNodes() {
 		if (root != null) {
+			userTextField = (TextField) root.lookup("#userTextField");
+			loginButton = (Button) root.lookup("#loginButton");
+			hostTextField = (TextField) root.lookup("#hostTextField");
+			errorMessageText = (Text) root.lookup("#errorMessageText");
 			serverAnswer = (TextArea) root.lookup("#serverAnswer");
 			chatTextArea = (TextArea) root.lookup("#chatTextArea");
 			sendChatTextArea = (TextArea) root.lookup("#sendChatTextArea");
@@ -249,14 +192,12 @@ public class Client extends Application {
 			errorLabel = (Label) root.lookup("#errorLabel");
 			tourLabel = (Label) root.lookup("#tourLabel");
 			scoreTableView = (TableView<Bilan.Score>) root.lookup("#scoreTableView");
-			hostAdressLabel = (Label) root.lookup("#hostAdressLabel");
-
 			TableColumn<Score,String> userCol = 
 					new TableColumn<Score,String>("Username");
 			userCol.setMinWidth(150);
 			userCol.setCellValueFactory(
 					new PropertyValueFactory<>("user"));
-
+	
 			TableColumn<Score,Integer> scoreCol = 
 					new TableColumn<Score,Integer>("Score");
 			scoreCol.setMinWidth(100);
@@ -271,46 +212,38 @@ public class Client extends Application {
 			coupsSolutionLabel =  (Label) root.lookup("#coupsSolutionLabel");
 			phaseLabel = (Label) root.lookup("#phaseLabel");
 			sendChatButton = (Button) root.lookup("#sendChatButton");
-			version = (Label) root.lookup("#version");
-		}
-	}
-
-	/**
-	 * Initialise les sons utilise par le client
-	 * @return true si les sons sont bien initialises, false sinon
-	 */
-	private boolean initMedia() {
-		try {
-			correctSound = new Media(new File(CORRECT).toURI().toString());
-			wrongSound = new Media(new File(WRONG).toURI().toString());
-			chatSound = new Media(new File(CHAT).toURI().toString());
-			enchereSound = new Media(new File(ENCHERE).toURI().toString());
-			loginSound = new Media(new File(LOGIN).toURI().toString());
-			logoutSound = new Media(new File(LOGOUT).toURI().toString());
-			reflexionSound = new Media(new File(REFLEXION).toURI().toString());
-			resolutionSound = new Media(new File(RESOLUTION).toURI().toString());
-
-			correctMediaPlayer = new MediaPlayer(correctSound);
-			wrongMediaPlayer = new MediaPlayer(wrongSound);
-			chatMediaPlayer = new MediaPlayer(chatSound);
-			enchereMediaPlayer = new MediaPlayer(enchereSound);
-			loginMediaPlayer = new MediaPlayer(loginSound);
-			logoutMediaPlayer = new MediaPlayer(logoutSound);
-			reflexionMediaPlayer= new MediaPlayer(reflexionSound);
-			resolutionMediaPlayer= new MediaPlayer(resolutionSound);
-			return true;
-		}
-		catch (MediaException me) {
-			System.err.println("Probleme avec l'initialisation des sons");
-			me.printStackTrace();
-			return false;
 		}
 	}
 
 	/**
 	 * ajout des EventHandler 
 	 */
-	public void installEventHandler() {
+	private void installEventHandler() {
+		/* taper entree pour ce conecter */
+		userTextField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ENTER) {
+					socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
+				}
+			}
+		});
+		hostTextField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ENTER) {
+					socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
+				}
+			}
+		});
+		/* bouton pour se connecter */
+		loginButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
+			}
+		});
+	
 		/* taper Entree pour envoyer message */
 		sendChatTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 			@Override
@@ -327,7 +260,7 @@ public class Client extends Application {
 				envoyerMessageChat();
 			}
 		});
-
+	
 		/* bouton de deconnexion */
 		logoutButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
@@ -351,7 +284,7 @@ public class Client extends Application {
 		});
 		/* bouton pour envoyer une solution */
 		solutionButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
-
+	
 			@Override
 			public void handle(ActionEvent event) {
 				envoyerSolution();
@@ -359,12 +292,12 @@ public class Client extends Application {
 		});
 		/* saisie d'une solution */
 		solutionTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
+	
 			@Override
 			public void handle(KeyEvent event) {
 				event.consume();
 				KeyCode key = event.getCode();
-
+	
 				if (taperCouleurRobot) {
 					switch (key) {
 					case R:
@@ -440,6 +373,111 @@ public class Client extends Application {
 	}
 
 	/**
+	 * Initialise les sons utilise par le client
+	 * @return true si les sons sont bien initialises, false sinon
+	 */
+	private boolean initMedia() {
+		try {
+			correctSound = new Media(new File(CORRECT).toURI().toString());
+			wrongSound = new Media(new File(WRONG).toURI().toString());
+			chatSound = new Media(new File(CHAT).toURI().toString());
+			enchereSound = new Media(new File(ENCHERE).toURI().toString());
+			loginSound = new Media(new File(LOGIN).toURI().toString());
+			logoutSound = new Media(new File(LOGOUT).toURI().toString());
+			reflexionSound = new Media(new File(REFLEXION).toURI().toString());
+			resolutionSound = new Media(new File(RESOLUTION).toURI().toString());
+			correctMediaPlayer = new MediaPlayer(correctSound);
+			wrongMediaPlayer = new MediaPlayer(wrongSound);
+			chatMediaPlayer = new MediaPlayer(chatSound);
+			enchereMediaPlayer = new MediaPlayer(enchereSound);
+			loginMediaPlayer = new MediaPlayer(loginSound);
+			logoutMediaPlayer = new MediaPlayer(logoutSound);
+			reflexionMediaPlayer= new MediaPlayer(reflexionSound);
+			resolutionMediaPlayer= new MediaPlayer(resolutionSound);
+			return true;
+		}
+		catch (MediaException me) {
+			System.err.println("Probleme avec l'initialisation des sons");
+			me.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * Essaie de se connecter sur un serveur
+	 * @param username le nom d'utilisateur choisi
+	 * @param host l'adresse du serveur
+	 * @param actionTarget le label permettant d'afficher un message d'erreur
+	 * @return la socket si la connexion est reussie, null sinon
+	 */
+	private Socket connexion(String username, String host, Text actionTarget)  {
+		boolean ok = Outils.checkHostAndCheckUsername(username, host, actionTarget);
+		if (ok) {
+			this.userName = username;
+			try {
+				if (socket == null) {
+					this.socket = new Socket(host, Protocole.PORT);
+					this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+					this.out = new PrintStream(socket.getOutputStream(), true);
+				}
+				Protocole.connect(userName, out);
+				String reponse = in.readLine();
+				if (reponse.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
+					serverAnswer.appendText("Bienvenue "+userName+"\n");
+					if (!isAudioReady) {
+						serverAnswer.appendText("Effets sonores non disponibles.\n");
+						serverAnswer.appendText("Lisez le manuel pour resoudre le probleme\n");
+					}
+					sendChatButton.setDisable(false);
+					sendChatTextArea.setDisable(false);
+					userTextField.setEditable(false);
+					hostTextField.setEditable(false);
+					logoutButton.setDisable(false);
+					loginButton.setVisible(false);
+					errorMessageText.setVisible(false);
+					bilan = new Bilan();
+					this.receiver = new Receive();
+					receiver.start();
+				}
+				else {
+					actionTarget.setText(username+" deja utilise");
+					actionTarget.setFill(Color.FIREBRICK);
+					return null;
+				}
+			} catch (UnknownHostException e) {
+				actionTarget.setText(e.getMessage());
+				return null;
+			} catch (IOException e) {
+				actionTarget.setText(e.getMessage());
+				return null;
+			}
+		}
+		return socket;
+	}
+
+	private void deconnexion() {
+		if(out != null) {
+			Protocole.disconnect(userName, out);
+			if (isAudioReady) {
+				correctMediaPlayer.dispose();
+				wrongMediaPlayer.dispose();
+				chatMediaPlayer.dispose();
+				enchereMediaPlayer.dispose();
+				loginMediaPlayer.dispose();
+				logoutMediaPlayer.dispose();
+				reflexionMediaPlayer.dispose();
+				resolutionMediaPlayer.dispose();
+			}
+			try {
+				socket.shutdownInput();
+				socket.shutdownOutput();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
 	 * Permet d'envoyer un message de chat
 	 */
 	private void envoyerMessageChat() {
@@ -476,8 +514,17 @@ public class Client extends Application {
 			if(coups.matches("\\d+")) {
 				int enchere = Integer.parseInt(coups);
 				if (enchere >= lastEnchere) {
-					errorLabel.setText("Enchere invalide");
-					errorLabel.setTextFill(Color.FIREBRICK);
+					if (firstEnchere) {
+						Protocole.sendEnchere(userName, coups, out);
+						proposition = Integer.parseInt(coups);
+						lastEnchere = enchere;
+						tuEnchere = true;
+						firstEnchere = false;
+					}
+					else {
+						errorLabel.setText("Enchere invalide");
+						errorLabel.setTextFill(Color.FIREBRICK);
+					}
 				}
 				else {
 					Protocole.sendEnchere(userName, coups, out);
@@ -520,119 +567,10 @@ public class Client extends Application {
 	}
 
 	/**
-	 * initialise la fenetre principale du client
-	 */
-	public void initClientGUI(Stage stage) {
-		if (root != null) {
-			root.getChildren().clear();
-		}
-		try {
-
-			BorderPane game = (BorderPane) FXMLLoader.load(getClass().getResource(GAME_SCREEN_UI));
-			root.getChildren().add(game);		
-			initInternalNodes();
-			installEventHandler();
-			this.receiver = new Receive();
-			receiver.start();
-			isAudioReady = initMedia();
-			/* Suppression de l'evenement reagissant au KEY_PRESSED de la fenetre de connexion */
-			stage.removeEventHandler(KeyEvent.KEY_PRESSED, filter);
-			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-				@Override public void handle(WindowEvent t) {
-					if(out != null) {
-						Protocole.disconnect(userName, out);
-						if (isAudioReady) {
-							correctMediaPlayer.dispose();
-							wrongMediaPlayer.dispose();
-							chatMediaPlayer.dispose();
-							enchereMediaPlayer.dispose();
-							loginMediaPlayer.dispose();
-							logoutMediaPlayer.dispose();
-							reflexionMediaPlayer.dispose();
-							resolutionMediaPlayer.dispose();
-						}
-						try {
-							socket.shutdownInput();
-							socket.shutdownOutput();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			});
-
-			serverAnswer.appendText("Bienvenue "+userName+"\n");
-			if (!isAudioReady) {
-				serverAnswer.appendText("Effets sonores non disponibles.\n");
-				serverAnswer.appendText("Lisez le manuel pour resoudre le probleme\n");
-			}
-			version.setText("    "+userName);
-			hostAdressLabel.setText(host);
-			bilan = new Bilan();
-
-			if (scene == null)
-				scene = new Scene(root);
-
-			stage.setWidth(1150);
-			stage.setHeight(680);
-			stage.setResizable(false);
-			stage.setScene(scene);
-			stage.setTitle("Rasende Roboter Client");
-			stage.centerOnScreen();
-			stage.show();
-
-		} catch(Exception e) {
-			System.err.println("[initClientGUI] "+e.getMessage());
-		}
-	}
-
-	/**
-	 * Mise a jour plateau statique 
-	 */
-	public void updatePlateau(){
-		Platform.runLater( new Runnable() {
-			@Override
-			public void run() {
-				BorderPane caseGUI;
-				plateauGrid.setGridLinesVisible(false);
-				plateauGrid.getChildren().clear();
-				for (int i = 0; i<16 ; i++) {
-					for (int j = 0; j<16 ; j++) {
-						caseGUI = plateau.getCase(i, j).render();
-						GridPane.setColumnIndex(caseGUI, j);
-						GridPane.setRowIndex(caseGUI, i);
-						plateauGrid.getChildren().add(caseGUI);
-					}
-				}
-				plateauGrid.setGridLinesVisible(true);
-			}
-		});
-	}
-
-	/**
-	 * mise a jour plateau dynamique pour affichage de la solution
-	 */
-	public void updatePlateauAnim(){
-		BorderPane caseGUI;
-		plateauGrid.setGridLinesVisible(false);
-		plateauGrid.getChildren().clear();
-		for (int i = 0; i<16 ; i++) {
-			for (int j = 0; j<16 ; j++) {
-				caseGUI = plateau.getCase(i, j).render();
-				GridPane.setColumnIndex(caseGUI, j);
-				GridPane.setRowIndex(caseGUI, i);
-
-				plateauGrid.getChildren().add(caseGUI);
-			}
-		}
-		plateauGrid.setGridLinesVisible(true);
-	}
-
-	/**
 	 * Fonction principale de traitement d'une requete du serveur
 	 * @param reponse la requete du serveur
 	 */
-	public void traitementReponseServeur(String reponse) {
+	private void traitementReponseServeur(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
 		String user, message;
 		switch (commande) {
@@ -672,7 +610,7 @@ public class Client extends Application {
 	 * Fonction de traitement d'une requete du serveur synchronisee
 	 * @param reponse la requete du serveur
 	 */
-	public synchronized void traitementReponseServerSync(String reponse) {
+	private synchronized void traitementReponseServerSync(String reponse) {
 		System.out.println("Traitement : "+reponse+"\n\n\n");
 		String commande = Outils.getCommandeName(reponse);
 		String user, data, enigme;
@@ -747,13 +685,12 @@ public class Client extends Application {
 						public void run() {
 							nombreCoupsLabel.setText("Nombre de coups actuel : "+proposition);
 							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);		
-							
+	
 						}
 					});
 				}
 				tuAsTrouve = false;
 				lastEnchere = proposition;
-				proposition = -1;
 			}
 			else {
 				System.err.println("["+Protocole.TU_AS_TROUVE+"] Je ne dois pas passer ici");
@@ -781,7 +718,7 @@ public class Client extends Application {
 					}
 				});
 				tuAsTrouve = false;
-				lastEnchere = Integer.MAX_VALUE;
+				lastEnchere = Integer.parseInt(data);
 			}
 			else {
 				System.err.println("["+Protocole.IL_A_TROUVE+"] Je ne dois pas passer ici");
@@ -1018,7 +955,6 @@ public class Client extends Application {
 		}
 	}
 
-
 	/**
 	 * Lance l'animation d'une solution
 	 * @param data la solution
@@ -1068,20 +1004,6 @@ public class Client extends Application {
 	}
 
 	/**
-	 * mise a jour du nombre de coups d'une solution
-	 * @param n le nombre de coups de la solution
-	 */
-	private void updateNombreCoupsSolution(int n) {
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				coupsSolutionLabel.setText(n+" coups");
-				coupsSolutionLabel.setTextFill(Color.BLUEVIOLET);
-			}
-		});
-	}
-
-	/**
 	 * mise a jour du tableau de score
 	 */
 	private void updateBilan() {
@@ -1091,33 +1013,6 @@ public class Client extends Application {
 				int tour = bilan.getTour();
 				tourLabel.setText("Tour "+tour);
 				scoreTableView.setItems(bilan.getScoreSheet());
-			}
-		});
-	}
-
-	/**
-	 * Modifie le texte du bouton trouveEnchere
-	 * @param text
-	 */
-	private void updateTrouveEnchereButton(String text) {
-		Platform.runLater( new Runnable() {
-			@Override
-			public void run() {
-				trouveEnchereButton.setText(text);
-			}
-		});
-	}
-
-	/**
-	 * Affiche message du serveur 
-	 * @param s
-	 */
-	private  void updateServerAnswer(String s) {
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				//TODO put date
-				serverAnswer.appendText(s+"\n");				
 			}
 		});
 	}
@@ -1135,8 +1030,20 @@ public class Client extends Application {
 			}
 		}).run();
 	}
-	
-	
+
+	/**
+	 * mise a jour du nombre de coups d'une solution
+	 * @param n le nombre de coups de la solution
+	 */
+	private void updateNombreCoupsSolution(int n) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				coupsSolutionLabel.setText(n+" coups");
+				coupsSolutionLabel.setTextFill(Color.BLUEVIOLET);
+			}
+		});
+	}
 
 	private void updatePhaseLabel(Phase p) {
 		Platform.runLater(new Runnable() {
@@ -1162,8 +1069,74 @@ public class Client extends Application {
 		});
 	}
 
+	/**
+	 * Mise a jour plateau statique 
+	 */
+	private void updatePlateau(){
+		Platform.runLater( new Runnable() {
+			@Override
+			public void run() {
+				BorderPane caseGUI;
+				plateauGrid.setGridLinesVisible(false);
+				plateauGrid.getChildren().clear();
+				for (int i = 0; i<16 ; i++) {
+					for (int j = 0; j<16 ; j++) {
+						caseGUI = plateau.getCase(i, j).render();
+						GridPane.setColumnIndex(caseGUI, j);
+						GridPane.setRowIndex(caseGUI, i);
+						plateauGrid.getChildren().add(caseGUI);
+					}
+				}
+				plateauGrid.setGridLinesVisible(true);
+			}
+		});
+	}
 
+	/**
+	 * mise a jour plateau dynamique pour affichage de la solution
+	 */
+	private void updatePlateauAnim(){
+		BorderPane caseGUI;
+		plateauGrid.setGridLinesVisible(false);
+		plateauGrid.getChildren().clear();
+		for (int i = 0; i<16 ; i++) {
+			for (int j = 0; j<16 ; j++) {
+				caseGUI = plateau.getCase(i, j).render();
+				GridPane.setColumnIndex(caseGUI, j);
+				GridPane.setRowIndex(caseGUI, i);
+	
+				plateauGrid.getChildren().add(caseGUI);
+			}
+		}
+		plateauGrid.setGridLinesVisible(true);
+	}
 
+	/**
+	 * Affiche message du serveur 
+	 * @param s
+	 */
+	private  void updateServerAnswer(String s) {
+		(new Runnable() {
+			@Override
+			public void run() {
+				//TODO put date
+				serverAnswer.appendText(s+"\n");				
+			}
+		}).run();
+	}
+
+	/**
+	 * Modifie le texte du bouton trouveEnchere
+	 * @param text
+	 */
+	private void updateTrouveEnchereButton(String text) {
+		Platform.runLater( new Runnable() {
+			@Override
+			public void run() {
+				trouveEnchereButton.setText(text);
+			}
+		});
+	}
 
 	/**
 	 * 

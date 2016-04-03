@@ -102,7 +102,7 @@ public class Bot {
 				String msg = BotData.getMessageBienvenue()+" "+user;
 				Protocole.sendChat(userName, msg, out);
 			}
-			if (Math.random() > 1-1/200) {
+			if (Math.random() > 0.992) {
 				attendre(2);
 				Protocole.sendChat(userName, BotData.getMessageBye(), out);
 				attendre (1);

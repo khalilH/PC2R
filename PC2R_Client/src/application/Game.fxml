@@ -19,7 +19,7 @@
             <Label alignment="CENTER" prefHeight="27.0" prefWidth="67.0" text="Username" textAlignment="CENTER" />
             <TextField fx:id="userTextField" />
             <Label prefHeight="24.0" prefWidth="51.0" text="Serveur" />
-            <TextField fx:id="hostTextField" text="localhost">
+            <TextField fx:id="hostTextField" text="83.157.179.188">
                <HBox.margin>
                   <Insets />
                </HBox.margin>

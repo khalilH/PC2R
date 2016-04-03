@@ -109,6 +109,7 @@ public class Client extends Application {
 	private Phase phase = null;
 	private Plateau plateau = null;
 	private String currentSolution = "";
+	private String lastActif = "";
 
 	/* javaFX Nodes */
 	private AnchorPane root;
@@ -119,7 +120,6 @@ public class Client extends Application {
 	private Button trouveEnchereButton;
 	private GridPane plateauGrid;
 	private Label errorLabel;
-	private Label nombreCoupsLabel;
 	private Label coupsSolutionLabel;
 	private Label phaseLabel;
 	private Label tourLabel;
@@ -134,7 +134,7 @@ public class Client extends Application {
 	private TextField userTextField;
 	private TableView<Score> scoreTableView;
 	private VBox solutionVBox;
-	
+
 
 	public static void main(String[] args) {
 		launch(args);
@@ -216,7 +216,6 @@ public class Client extends Application {
 			solutionButton = (Button) root.lookup("#solutionButton");
 			solutionTextArea = (TextArea) root.lookup("#solutionTextArea");
 			solutionVBox = (VBox) root.lookup("#solutionVBox");
-			nombreCoupsLabel = (Label) root.lookup("#nombreCoupsLabel");
 			coupsSolutionLabel =  (Label) root.lookup("#coupsSolutionLabel");
 			phaseLabel = (Label) root.lookup("#phaseLabel");
 			sendChatButton = (Button) root.lookup("#sendChatButton");
@@ -524,8 +523,8 @@ public class Client extends Application {
 				enchere = Integer.parseInt(coups);
 				if (enchere >= lastEnchere) {
 
-						errorLabel.setText("Enchere invalide");
-						errorLabel.setTextFill(Color.FIREBRICK);
+					errorLabel.setText("Enchere invalide");
+					errorLabel.setTextFill(Color.FIREBRICK);
 				}
 				else {
 					Protocole.sendEnchere(userName, coups, out);
@@ -659,7 +658,6 @@ public class Client extends Application {
 						trouveEnchereButton.setText("Trouve");
 						trouveEnchereButton.setDisable(false);
 						coupTextField.setDisable(false);
-						nombreCoupsLabel.setText("");
 						errorLabel.setText("");
 						coupsSolutionLabel.setText("");
 					}
@@ -682,16 +680,6 @@ public class Client extends Application {
 					enchereMediaPlayer.seek(Duration.ZERO);
 				}
 				updateTrouveEnchereButton("Encherir");
-				if (proposition != -1) {
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							nombreCoupsLabel.setText("Nombre de coups actuel : "+proposition);
-							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);		
-
-						}
-					});
-				}
 				tuAsTrouve = false;
 				lastEnchere = proposition;
 			}
@@ -713,13 +701,6 @@ public class Client extends Application {
 				}
 				updateTrouveEnchereButton("Encherir");
 				proposition = Integer.parseInt(data);
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						nombreCoupsLabel.setText("Nombre de coups actuel : "+data);
-						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
-					}
-				});
 				tuAsTrouve = false;
 			}
 			else {
@@ -751,8 +732,6 @@ public class Client extends Application {
 					@Override
 					public void run() {
 						if (enchere < lastEnchere || enchere < proposition) {
-							nombreCoupsLabel.setText("Meilleure Enchere: "+lastEnchere+" coups");
-							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
 							lastEnchere = enchere;
 						}
 					}
@@ -781,13 +760,6 @@ public class Client extends Application {
 				Integer enchere = Integer.parseInt(data);
 				updateServerAnswer(user+" a encheri avec "+data+" coups");
 				if (enchere < lastEnchere) {
-					Platform.runLater(new Runnable() {
-						@Override
-						public void run() {
-							nombreCoupsLabel.setText("Meilleure Enchere: "+data+" coups");
-							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
-						}
-					});
 					lastEnchere = enchere;
 				}
 			}
@@ -802,6 +774,7 @@ public class Client extends Application {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
 				if (!user.equals("null")) {
+					lastActif = user;
 					updateServerAnswer("La phase de resolution commence");
 					if (isAudioReady) {
 						resolutionMediaPlayer.play();
@@ -871,6 +844,7 @@ public class Client extends Application {
 		case Protocole.MAUVAISE:
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
 				user = Outils.getFirstArg(reponse);
+				lastActif = user;
 				updateServerAnswer("Solution refusee");
 				if (isAudioReady) {
 					wrongMediaPlayer.play();
@@ -883,7 +857,6 @@ public class Client extends Application {
 					Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
-							nombreCoupsLabel.setText("");
 							coupsSolutionLabel.setText("");
 						}
 					});
@@ -900,7 +873,6 @@ public class Client extends Application {
 							solutionTextArea.setDisable(false);
 							solutionVBox.setVisible(true);
 							coupsSolutionLabel.setText("");
-							nombreCoupsLabel.setText("");		
 						}
 					});
 					taperCouleurRobot = true;
@@ -938,18 +910,28 @@ public class Client extends Application {
 				}
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Temps depasse");
-				if (!user.equals(userName)) {
-					updateServerAnswer("Le joueur actif est "+user);
-				}
-				else {
-					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
-					updateServerAnswer("Touches autorisees : r, b, j, v et "
-							+ "fleches directionnelles");
-					solutionButton.setDisable(false);
-					solutionTextArea.setDisable(false);
-					solutionVBox.setVisible(true);
+				if (lastActif.equals(userName)) {
+					solutionButton.setDisable(true);
+					solutionTextArea.setDisable(true);
+					solutionVBox.setVisible(false);
 					taperCouleurRobot = true;
 					currentSolution = "";
+				}
+				else {
+					lastActif = user;
+					if (!user.equals(userName)) {
+						updateServerAnswer("Le joueur actif est "+user);
+					}
+					else {
+						updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+						updateServerAnswer("Touches autorisees : r, b, j, v et "
+								+ "fleches directionnelles");
+						solutionButton.setDisable(false);
+						solutionTextArea.setDisable(false);
+						solutionVBox.setVisible(true);
+						taperCouleurRobot = true;
+						currentSolution = "";
+					}
 				}
 			}
 			else {
@@ -984,7 +966,7 @@ public class Client extends Application {
 					}
 				}
 				System.out.println("nbMove = "+nbMove);
-				interv = 14.5*1000/nbMove;
+				interv = 7.6*1000/nbMove;
 				System.out.println("interv "+interv);				
 			}
 		}).run();

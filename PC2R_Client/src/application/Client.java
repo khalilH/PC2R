@@ -698,7 +698,7 @@ public class Client extends Application {
 				updatePhaseLabel(phase);
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
-				updateServerAnswer(user+" a trouve une solution en "+data+" coups !");
+				updateServerAnswer(user+" a trouve en "+data+" coups !");
 				updateServerAnswer("La phase d'enchere commence");
 				if (isAudioReady) {
 					enchereMediaPlayer.play();
@@ -793,8 +793,8 @@ public class Client extends Application {
 					}
 					else {
 						updateServerAnswer("Taper votre solution dans la zone ci-dessus");
-						updateServerAnswer("Touches autorisees : r, b, j, v et "
-								+ "fleches directionnelles");
+						updateServerAnswer("Touches autorisees : r, b, j, v");
+						updateServerAnswer("et fleches directionnelles");
 						solutionButton.setDisable(false);
 						solutionTextArea.setDisable(false);
 						solutionVBox.setVisible(true);

@@ -17,7 +17,7 @@
       <HBox prefHeight="15.0" prefWidth="580.0" spacing="20.0" BorderPane.alignment="CENTER">
          <children>
             <Label alignment="CENTER" prefHeight="27.0" prefWidth="67.0" text="Username" textAlignment="CENTER" />
-            <TextField fx:id="userTextField" text="ladi" />
+            <TextField fx:id="userTextField" />
             <Label prefHeight="24.0" prefWidth="51.0" text="Serveur" />
             <TextField fx:id="hostTextField" text="localhost">
                <HBox.margin>

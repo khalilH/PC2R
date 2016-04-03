@@ -101,10 +101,10 @@ public class Client extends Application {
 	private boolean tuAsTrouve = false;
 	private boolean tuEnchere = false;
 	private boolean taperCouleurRobot= true;
-	private boolean firstEnchere = true;
 	private double interv = 100;
 	private Enigme enigme;
 	private int lastEnchere = Integer.MAX_VALUE;
+	private int enchere;
 	private int proposition = -1;
 	private Phase phase = null;
 	private Plateau plateau = null;
@@ -134,6 +134,7 @@ public class Client extends Application {
 	private TextField userTextField;
 	private TableView<Score> scoreTableView;
 	private VBox solutionVBox;
+	
 
 	public static void main(String[] args) {
 		launch(args);
@@ -520,24 +521,15 @@ public class Client extends Application {
 			String coups = coupTextField.getText();
 			coupTextField.setText("");
 			if(coups.matches("\\d+")) {
-				int enchere = Integer.parseInt(coups);
+				enchere = Integer.parseInt(coups);
 				if (enchere >= lastEnchere) {
-					if (firstEnchere) {
-						Protocole.sendEnchere(userName, coups, out);
-						proposition = Integer.parseInt(coups);
-						lastEnchere = enchere;
-						tuEnchere = true;
-						firstEnchere = false;
-					}
-					else {
+
 						errorLabel.setText("Enchere invalide");
 						errorLabel.setTextFill(Color.FIREBRICK);
-					}
 				}
 				else {
 					Protocole.sendEnchere(userName, coups, out);
 					proposition = Integer.parseInt(coups);
-					lastEnchere = enchere;
 					tuEnchere = true;
 				}
 			}
@@ -652,7 +644,7 @@ public class Client extends Application {
 			this.plateau.enleverRobots();
 			this.enigme = new Enigme(enigme);
 			this.plateau.setEnigme(this.enigme);
-
+			proposition = -1;
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				if (isAudioReady) {
@@ -719,7 +711,7 @@ public class Client extends Application {
 					enchereMediaPlayer.seek(Duration.ZERO);
 				}
 				updateTrouveEnchereButton("Encherir");
-				lastEnchere = Integer.parseInt(data);
+				proposition = Integer.parseInt(data);
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
@@ -728,7 +720,6 @@ public class Client extends Application {
 					}
 				});
 				tuAsTrouve = false;
-				lastEnchere = Integer.parseInt(data);
 			}
 			else {
 				System.err.println("["+Protocole.IL_A_TROUVE+"] Je ne dois pas passer ici");
@@ -758,8 +749,11 @@ public class Client extends Application {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						nombreCoupsLabel.setText("Meilleure Enchere: "+lastEnchere+" coups");
-						nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+						if (enchere < lastEnchere || enchere < proposition) {
+							nombreCoupsLabel.setText("Meilleure Enchere: "+lastEnchere+" coups");
+							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);
+							lastEnchere = enchere;
+						}
 					}
 				});
 				tuEnchere = false;				

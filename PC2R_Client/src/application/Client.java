@@ -104,8 +104,8 @@ public class Client extends Application {
 	private double interv = 100;
 	private Enigme enigme;
 	private int lastEnchere = Integer.MAX_VALUE;
-	private int enchere;
 	private int proposition = -1;
+	private int enchere;
 	private Phase phase = null;
 	private Plateau plateau = null;
 	private String currentSolution = "";
@@ -528,7 +528,6 @@ public class Client extends Application {
 				}
 				else {
 					Protocole.sendEnchere(userName, coups, out);
-					proposition = Integer.parseInt(coups);
 					tuEnchere = true;
 				}
 			}
@@ -631,6 +630,12 @@ public class Client extends Application {
 			break;
 		case Protocole.VAINQUEUR:
 			data = Outils.getFirstArg(reponse);
+			phase = Phase.ATTENTE_TOUR;
+			updatePhaseLabel(phase);
+			if (plateau != null) {
+				plateau.reset();
+			}
+			updatePlateau();
 			updateServerAnswer("Fin de la session");
 			bilan.decoderBilan(data);
 			updateBilan();
@@ -700,7 +705,6 @@ public class Client extends Application {
 					enchereMediaPlayer.seek(Duration.ZERO);
 				}
 				updateTrouveEnchereButton("Encherir");
-				proposition = Integer.parseInt(data);
 				tuAsTrouve = false;
 			}
 			else {
@@ -731,7 +735,7 @@ public class Client extends Application {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						if (enchere < lastEnchere || enchere < proposition) {
+						if (enchere < lastEnchere) {
 							lastEnchere = enchere;
 						}
 					}
@@ -844,6 +848,7 @@ public class Client extends Application {
 		case Protocole.MAUVAISE:
 			if (phase == Phase.RESOLUTION && attenteStatutSolution) {
 				user = Outils.getFirstArg(reponse);
+				attenteStatutSolution = false;
 				lastActif = user;
 				updateServerAnswer("Solution refusee");
 				if (isAudioReady) {
@@ -878,7 +883,7 @@ public class Client extends Application {
 					taperCouleurRobot = true;
 					currentSolution = "";
 				}
-				attenteStatutSolution = false;
+				
 			}
 			else {
 				System.err.println("["+Protocole.MAUVAISE+"] Je ne dois pas passer ici");
@@ -887,6 +892,7 @@ public class Client extends Application {
 		case Protocole.FIN_RESOLUTION:
 			if (phase == Phase.RESOLUTION) {
 				updateServerAnswer("Plus de joueurs restants, Fin du tour");
+				attenteStatutSolution = false;
 				if (wrongMediaPlayer != null)
 					wrongMediaPlayer.play();
 				Platform.runLater(new Runnable() {
@@ -904,6 +910,7 @@ public class Client extends Application {
 			break;
 		case Protocole.TROP_LONG:
 			if (phase == Phase.RESOLUTION) {
+				attenteStatutSolution = false;
 				if (isAudioReady) {
 					wrongMediaPlayer.play();
 					wrongMediaPlayer.seek(Duration.ZERO);
@@ -1148,13 +1155,13 @@ public class Client extends Application {
 					try {
 						while ((recu = in.readLine()) != null) {
 							System.out.println("Reception : "+recu.length()+" - "+recu);
-							Thread t = new Thread(new Runnable() {
-								@Override
-								public void run() {
+//							Thread t = new Thread(new Runnable() {
+//								@Override
+//								public void run() {
 									traitementReponseServeur(recu);									
-								}
-							});
-							t.start();
+//								}
+//							});
+//							t.start();
 						}
 					} catch (IOException e) {
 						e.printStackTrace();

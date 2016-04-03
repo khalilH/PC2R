@@ -110,7 +110,7 @@ public class Protocole {
 	 * Genere une requete a partir d'une commande et d'un seul parametre
 	 * @param commande la commande de la requete
 	 * @param param1 le parametre de la requete
-	 * @param out
+	 * @param out PrintStream du serveur
 	 */
 	private static void send(String commande, String param1, PrintStream out){
 		out.print(commande+"/"+param1+"/\n");
@@ -121,7 +121,7 @@ public class Protocole {
 	 * @param commande la commande de la requete
 	 * @param param1 le premier parametre
 	 * @param param2 le second parametre
-	 * @param out
+	 * @param out PrintStream du serveur
 	 */
 	private static void send(String commande, String param1, String param2, PrintStream out){
 		out.print(commande+"/"+param1+"/"+param2+"/\n");

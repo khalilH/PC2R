@@ -91,7 +91,7 @@ public class Outils {
 	 * @param username le nom d'utilisateur
 	 * @param host l'adresse du serveur
 	 * @param actionTarget Node sur lequel afficher le message d'erreur
-	 * @return
+	 * @return true si l'username et le serveur sont valides, false sinon
 	 */
 	public static boolean checkHostAndCheckUsername(
 			String username, String host, Text actionTarget) {
@@ -118,6 +118,12 @@ public class Outils {
 		if (deplacements == null || deplacements.equals(""))
 			return false;
 		return deplacements.matches("([RBJV][HBGD])+");
+	}
+	
+	public static boolean isValidPlateau(String plateau) {
+		if (plateau == null || plateau.equals(""))
+			return false;
+		return plateau.matches("(\\(\\d+,\\d+,[HDGB]\\))+");
 	}
 
 	/**

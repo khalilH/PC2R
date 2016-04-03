@@ -7,7 +7,10 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -65,6 +68,8 @@ public class Client extends Application {
 
 
 	/* Client stuff */
+	private Calendar calendar = Calendar.getInstance();
+	DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 	private String userName;
 	private Socket socket;
 	private BufferedReader in;
@@ -72,7 +77,6 @@ public class Client extends Application {
 	private Receive receiver;
 
 	/* Audio */
-	private boolean isAudioReady = false;
 	Media correctSound = null;
 	Media wrongSound = null;
 	Media chatSound = null;
@@ -92,18 +96,19 @@ public class Client extends Application {
 
 	/* Game Stuff */
 	private Bilan bilan;
+	private boolean isAudioReady = false;
 	private boolean attenteStatutSolution = false;
 	private boolean tuAsTrouve = false;
 	private boolean tuEnchere = false;
 	private boolean taperCouleurRobot= true;
 	private boolean firstEnchere = true;
-	private String currentSolution = "";
-	private int lastEnchere = Integer.MAX_VALUE;
-	double interv = 100;
-	private Phase phase = null;
-	private Plateau plateau;
+	private double interv = 100;
 	private Enigme enigme;
+	private int lastEnchere = Integer.MAX_VALUE;
 	private int proposition = -1;
+	private Phase phase = null;
+	private Plateau plateau = null;
+	private String currentSolution = "";
 
 	/* javaFX Nodes */
 	private AnchorPane root;
@@ -117,10 +122,10 @@ public class Client extends Application {
 	private Label nombreCoupsLabel;
 	private Label coupsSolutionLabel;
 	private Label phaseLabel;
-	private TextArea solutionTextArea;
 	private Label tourLabel;
 	private Stage stage;
 	private Text errorMessageText;
+	private TextArea solutionTextArea;
 	private TextArea serverAnswer;
 	private TextArea chatTextArea;
 	private TextArea sendChatTextArea;
@@ -145,6 +150,7 @@ public class Client extends Application {
 
 	/**
 	 * initialise la fenetre principale du client
+	 * @param stage le stage de l'application
 	 */
 	private void initClientGUI(Stage stage) {
 		if (root != null) {
@@ -155,18 +161,19 @@ public class Client extends Application {
 			root.getChildren().add(game);		
 			initInternalNodes();
 			isAudioReady = initMedia();
-			installEventHandler();
 			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 				@Override public void handle(WindowEvent t) {
 					deconnexion();
 				}
 			});
 			Scene scene = new Scene(root);
+			
 			stage.setResizable(false);
 			stage.setScene(scene);
 			stage.setTitle("Rasende Roboter Client");
 			stage.centerOnScreen();
 			stage.show();
+			installEventHandler();
 		} catch(Exception e) {
 			System.err.println("[initClientGUI] "+e.getMessage());
 		}
@@ -197,7 +204,7 @@ public class Client extends Application {
 			userCol.setMinWidth(150);
 			userCol.setCellValueFactory(
 					new PropertyValueFactory<>("user"));
-	
+
 			TableColumn<Score,Integer> scoreCol = 
 					new TableColumn<Score,Integer>("Score");
 			scoreCol.setMinWidth(100);
@@ -243,7 +250,7 @@ public class Client extends Application {
 				socket = connexion(userTextField.getText(), hostTextField.getText(),errorMessageText);
 			}
 		});
-	
+
 		/* taper Entree pour envoyer message */
 		sendChatTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 			@Override
@@ -260,7 +267,7 @@ public class Client extends Application {
 				envoyerMessageChat();
 			}
 		});
-	
+
 		/* bouton de deconnexion */
 		logoutButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
@@ -284,7 +291,7 @@ public class Client extends Application {
 		});
 		/* bouton pour envoyer une solution */
 		solutionButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
-	
+
 			@Override
 			public void handle(ActionEvent event) {
 				envoyerSolution();
@@ -292,12 +299,12 @@ public class Client extends Application {
 		});
 		/* saisie d'une solution */
 		solutionTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-	
+
 			@Override
 			public void handle(KeyEvent event) {
 				event.consume();
 				KeyCode key = event.getCode();
-	
+
 				if (taperCouleurRobot) {
 					switch (key) {
 					case R:
@@ -423,6 +430,7 @@ public class Client extends Application {
 				Protocole.connect(userName, out);
 				String reponse = in.readLine();
 				if (reponse.equals(Protocole.BIENVENUE+"/"+username+"/")) { 
+					
 					serverAnswer.appendText("Bienvenue "+userName+"\n");
 					if (!isAudioReady) {
 						serverAnswer.appendText("Effets sonores non disponibles.\n");
@@ -603,6 +611,7 @@ public class Client extends Application {
 			break;
 		default:
 			traitementReponseServerSync(reponse);
+			break;
 		}
 	}
 
@@ -620,14 +629,14 @@ public class Client extends Application {
 			break;
 		case Protocole.SESSION:
 			data = Outils.getFirstArg(reponse);
-			if (plateau != null) {
-				plateau.reset();
-			}
-			plateau = new Plateau(data);
-			updatePlateau();
 			phase = Phase.ATTENTE_TOUR;
 			updatePhaseLabel(phase);
 			updateServerAnswer("Debut Session");
+			if (plateau != null) {
+				plateau.reset();
+			}
+			this.plateau = new Plateau(data);
+			updatePlateau();
 			break;
 		case Protocole.VAINQUEUR:
 			data = Outils.getFirstArg(reponse);
@@ -640,10 +649,10 @@ public class Client extends Application {
 			data= Outils.getSecondArg(reponse);
 			bilan.decoderBilan(data);
 			updateBilan();
-			plateau.enleverRobots();
+			this.plateau.enleverRobots();
 			this.enigme = new Enigme(enigme);
-			plateau.setEnigme(this.enigme);
-			updatePlateau();
+			this.plateau.setEnigme(this.enigme);
+			
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				if (isAudioReady) {
@@ -662,6 +671,7 @@ public class Client extends Application {
 						coupsSolutionLabel.setText("");
 					}
 				});
+				updatePlateau();
 				updateServerAnswer("La phase de reflexion commence");
 			}
 			else {
@@ -685,7 +695,7 @@ public class Client extends Application {
 						public void run() {
 							nombreCoupsLabel.setText("Nombre de coups actuel : "+proposition);
 							nombreCoupsLabel.setTextFill(Color.LIMEGREEN);		
-	
+
 						}
 					});
 				}
@@ -962,7 +972,7 @@ public class Client extends Application {
 	private void startAnimation(String data) {
 		ArrayList<String> coups = Outils.getCoups(data);
 		/* Calcul de l'intervalle d'affichage d'un deplacement */
-		Platform.runLater(new Runnable() {
+		(new Runnable() {
 
 			@Override
 			public void run() {
@@ -977,10 +987,10 @@ public class Client extends Application {
 					}
 				}
 				System.out.println("nbMove = "+nbMove);
-				interv = 14.7*1000/nbMove;
+				interv = 14.5*1000/nbMove;
 				System.out.println("interv "+interv);				
 			}
-		});
+		}).run();
 
 		int nbCoups = 1;
 		for(String coup : coups) {
@@ -1003,6 +1013,11 @@ public class Client extends Application {
 		}
 	}
 
+	private String getTime() {
+		calendar = Calendar.getInstance();
+		return "["+dateFormat.format(calendar.getTime())+"] ";
+	}
+	
 	/**
 	 * mise a jour du tableau de score
 	 */
@@ -1018,15 +1033,14 @@ public class Client extends Application {
 	}
 
 	/**
-	 * affiche message du chat
-	 * @param s
+	 * Permet d'afficher message du chat
+	 * @param s le message
 	 */
 	private void updateChat(String s) {
 		(new Runnable() {
-			//TODO put date
 			@Override
 			public void run() {
-				chatTextArea.appendText(s+"\n");				
+				chatTextArea.appendText(getTime()+s+"\n");				
 			}
 		}).run();
 	}
@@ -1104,7 +1118,7 @@ public class Client extends Application {
 				caseGUI = plateau.getCase(i, j).render();
 				GridPane.setColumnIndex(caseGUI, j);
 				GridPane.setRowIndex(caseGUI, i);
-	
+
 				plateauGrid.getChildren().add(caseGUI);
 			}
 		}
@@ -1112,14 +1126,13 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Affiche message du serveur 
-	 * @param s
+	 * Permet d'affiche message du serveur 
+	 * @param s le message a afficher
 	 */
 	private  void updateServerAnswer(String s) {
 		(new Runnable() {
 			@Override
 			public void run() {
-				//TODO put date
 				serverAnswer.appendText(s+"\n");				
 			}
 		}).run();
@@ -1127,7 +1140,7 @@ public class Client extends Application {
 
 	/**
 	 * Modifie le texte du bouton trouveEnchere
-	 * @param text
+	 * @param text le texte a afficher pour le bouton
 	 */
 	private void updateTrouveEnchereButton(String text) {
 		Platform.runLater( new Runnable() {
@@ -1162,7 +1175,6 @@ public class Client extends Application {
 								}
 							});
 							t.start();
-							updateValue(null);
 						}
 					} catch (IOException e) {
 						e.printStackTrace();

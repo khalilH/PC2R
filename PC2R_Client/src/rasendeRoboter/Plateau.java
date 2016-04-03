@@ -202,12 +202,14 @@ public class Plateau {
 		String tmp = description.replaceAll("\\)\\(", "\\);\\(");
 		String tmpTab[] = tmp.split(";");
 		for (String s : tmpTab) {
+			if (s.length() > 1) {
 			String aux = s.substring(1, s.length()-1);
 			String auxTab[] = aux.split(",");
 			int i = Integer.parseInt(auxTab[0]);
 			int j = Integer.parseInt(auxTab[1]);
 			String mur = auxTab[2];
 			plateau[i][j].buildWall(mur);
+			}
 		}
 	}
 
@@ -250,8 +252,13 @@ public class Plateau {
 
 	
 	public static void main(String[] args) {
-		Plateau p = new Plateau("(0,3,D)(0,11,D)(1,13,G)(1,13,H)");
-		System.out.println(p);
+		Plateau p = new Plateau("(0,3,D)(0,11,D)(0,13,B)(1,12,D)(2,5,D)(2,5,B)(2,9,D)(2,9,B)(4,0,B)(4,2,D)(4,2,H)(4,15,H)(5,7,G)(5,7,B)(5,14,G)(5,14,B)(6,1,G)(6,1,H)(6,11,H)(6,11,D)(7,7,G)(7,7,H)(7,8,H)(7,8,D)(8,7,G)(8,7,B)(8,8,B)(8,8,D)(8,5,H)(8,5,D)(9,1,D)(9,1,B)(9,12,D)(9,15,B)(10,4,G)(10,4,B)(11,0,B)(12,9,H)(12,9,G)(13,5,D)(13,5,H)(13,14,G)(13,14,B)(14,3,G)(14,3,H)(14,11,D)(14,11,B)(15,14,G)(15,6,D)");
+		if (Outils.isValidPlateau(p.toString())) {
+			System.out.println("BON");
+		}
+		else {
+			System.out.println("MAUVAIS");
+		}
 	}
 
 }

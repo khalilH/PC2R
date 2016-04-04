@@ -149,7 +149,7 @@ public class Bot {
 				}
 			}
 			else {
-				System.err.println("Je ne dois pas passer ici");
+				System.err.println("[SESSION] Je ne dois pas passer ici");
 			}
 			break;
 		case Protocole.IL_A_TROUVE:
@@ -177,7 +177,7 @@ public class Bot {
 				}
 			}
 			else {
-				System.err.println("Je ne dois pas passer ici");
+				System.err.println("[IL_A_TROUVE] Je ne dois pas passer ici");
 			}
 			break;
 		case Protocole.FIN_REFLEXION:
@@ -195,7 +195,7 @@ public class Bot {
 				}
 			}
 			else {
-				System.err.println("Je ne dois pas passer ici");
+				System.err.println("[FIN_REFLEXION] Je ne dois pas passer ici");
 			}
 			break;
 		case Protocole.VALIDATION:
@@ -214,7 +214,7 @@ public class Bot {
 				tuEnchere = false;				
 			}
 			else {
-				System.err.println("Je ne dois pas passer ici");
+				System.err.println("[VALIDATION] Je ne dois pas passer ici");
 			}
 			break;
 		case Protocole.NOUVELLE_ENCHERE:
@@ -243,7 +243,7 @@ public class Bot {
 				}
 			}
 			else {
-				System.err.println("Je ne dois pas passer ici");
+				System.err.println("[NOUVELLE_ENCHERE] Je ne dois pas passer ici");
 			}
 			break;
 		case Protocole.FIN_ENCHERE:

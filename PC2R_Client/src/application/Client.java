@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -107,6 +108,8 @@ public class Client extends Application {
 	private Plateau plateau = null;
 	private String currentSolution = "";
 	private String lastActif = "";
+	private List<String> listeMessageServer = new ArrayList<String>();
+	private List<String> listeMessageChat = new ArrayList<String>();
 
 	/* javaFX Nodes */
 	private AnchorPane root;
@@ -135,7 +138,7 @@ public class Client extends Application {
 
 	public static void main(String[] args) {
 		try {
-		launch(args);
+			launch(args);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -521,8 +524,8 @@ public class Client extends Application {
 			String coups = coupTextField.getText();
 			coupTextField.setText("");
 			if(coups.matches("\\d+")) {
-					Protocole.sendEnchere(userName, coups, out);
-					tuEnchere = true;
+				Protocole.sendEnchere(userName, coups, out);
+				tuEnchere = true;
 			}
 			else {
 				errorLabel.setText("Veuillez saisir un nombre");
@@ -652,7 +655,6 @@ public class Client extends Application {
 				Platform.runLater(new Runnable() {			
 					@Override
 					public void run() {
-						serverAnswer.setText("");
 						trouveEnchereButton.setText("Trouve");
 						trouveEnchereButton.setDisable(false);
 						coupTextField.setDisable(false);
@@ -861,7 +863,7 @@ public class Client extends Application {
 					taperCouleurRobot = true;
 					currentSolution = "";
 				}
-				
+
 			}
 			else {
 				System.err.println("["+Protocole.MAUVAISE+"] Je ne dois pas passer ici");
@@ -881,7 +883,13 @@ public class Client extends Application {
 				});
 				phase = Phase.ATTENTE_TOUR;
 				updatePhaseLabel(phase);
-				//TODO desactiver zone envoie solution
+				if (lastActif.equals(userName)) {
+					solutionButton.setDisable(true);
+					solutionTextArea.setDisable(true);
+					solutionVBox.setVisible(false);
+					taperCouleurRobot = true;
+					currentSolution = "";
+				}
 			}
 			else {
 				System.err.println("["+Protocole.FIN_RESOLUTION+"] Je ne dois pas passer ici");
@@ -1005,7 +1013,15 @@ public class Client extends Application {
 		(new Runnable() {
 			@Override
 			public void run() {
-				chatTextArea.appendText(getTime()+s+"\n");				
+				listeMessageChat.add(getTime()+s+"\n");
+				String ret = "";
+				for (String msg : listeMessageChat) {
+					ret += msg;
+				}
+				chatTextArea.setText(ret);
+				if (listeMessageChat.size() > 40) {
+					listeMessageChat = listeMessageChat.subList(1, listeMessageChat.size());
+				}
 			}
 		}).run();
 	}
@@ -1098,7 +1114,15 @@ public class Client extends Application {
 		(new Runnable() {
 			@Override
 			public void run() {
-				serverAnswer.appendText(s+"\n");				
+				listeMessageServer.add(s);
+				String ret = "";
+				for (String truc : listeMessageServer) {
+					ret += truc+"\n";
+				}
+				serverAnswer.setText(ret);
+				if (listeMessageServer.size() > 10) {
+					listeMessageServer = listeMessageServer.subList(1, listeMessageServer.size());
+				}
 			}
 		}).run();
 
@@ -1134,13 +1158,13 @@ public class Client extends Application {
 					try {
 						while ((recu = in.readLine()) != null) {
 							System.out.println("Reception : "+recu.length()+" - "+recu);
-//							Thread t = new Thread(new Runnable() {
-//								@Override
-//								public void run() {
+							Thread t = new Thread(new Runnable() {
+								@Override
+								public void run() {
 									traitementReponseServeur(recu);									
-//								}
-//							});
-//							t.start();
+								}
+							});
+							t.start();
 						}
 					} catch (IOException e) {
 						e.printStackTrace();

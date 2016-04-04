@@ -1022,6 +1022,7 @@ public class Client extends Application {
 					ret += msg;
 				}
 				chatTextArea.setText(ret);
+				chatTextArea.appendText("");
 				if (listeMessageChat.size() > 40) {
 					listeMessageChat = listeMessageChat.subList(1, listeMessageChat.size());
 				}
@@ -1123,6 +1124,7 @@ public class Client extends Application {
 					ret += truc+"\n";
 				}
 				serverAnswer.setText(ret);
+				serverAnswer.appendText("");
 				if (listeMessageServer.size() > 10) {
 					listeMessageServer = listeMessageServer.subList(1, listeMessageServer.size());
 				}

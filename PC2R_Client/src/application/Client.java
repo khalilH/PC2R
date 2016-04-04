@@ -882,6 +882,7 @@ public class Client extends Application {
 			break;
 		case Protocole.FIN_RESOLUTION:
 			if (phase == Phase.RESOLUTION || phase == Phase.REFLEXION) {
+				updateServerAnswer("Solution refusee");
 				updateServerAnswer("Plus de joueurs restants, Fin du tour");
 				attenteStatutSolution = false;
 				if (wrongMediaPlayer != null)

@@ -57,14 +57,14 @@ import rasendeRoboter.Protocole;
 public class Client extends Application {
 
 	private static final String GAME_SCREEN_UI = "Game.fxml";
-	private static final String CORRECT = "./audio/correct.mp3";
-	private static final String WRONG = "./audio/wrong.mp3";
-	private static final String CHAT = "./audio/chat.mp3";
-	private static final String ENCHERE = "./audio/enchere.mp3";
-	private static final String LOGIN = "./audio/login.mp3";
-	private static final String LOGOUT = "./audio/logout.mp3";
-	private static final String REFLEXION = "./audio/reflexion.mp3";
-	private static final String RESOLUTION = "./audio/resolution.mp3";
+	private static final String CORRECT = "audio/correct.mp3";
+	private static final String WRONG = "audio/wrong.mp3";
+	private static final String CHAT = "audio/chat.mp3";
+	private static final String ENCHERE = "audio/enchere.mp3";
+	private static final String LOGIN = "audio/login.mp3";
+	private static final String LOGOUT = "audio/logout.mp3";
+	private static final String REFLEXION = "audio/reflexion.mp3";
+	private static final String RESOLUTION = "audio/resolution.mp3";
 
 
 	/* Client stuff */
@@ -103,9 +103,6 @@ public class Client extends Application {
 	private boolean taperCouleurRobot= true;
 	private double interv = 100;
 	private Enigme enigme;
-	private int lastEnchere = Integer.MAX_VALUE;
-	private int proposition = -1;
-	private int enchere;
 	private Phase phase = null;
 	private Plateau plateau = null;
 	private String currentSolution = "";
@@ -512,7 +509,6 @@ public class Client extends Application {
 			if(coups.matches("\\d+")) {
 				errorLabel.setText("");
 				Protocole.sendTrouve(userName, coups, out);
-				proposition = Integer.parseInt(coups);
 				tuAsTrouve = true;
 			}
 			else {
@@ -525,16 +521,8 @@ public class Client extends Application {
 			String coups = coupTextField.getText();
 			coupTextField.setText("");
 			if(coups.matches("\\d+")) {
-				enchere = Integer.parseInt(coups);
-				if (enchere >= lastEnchere) {
-
-					errorLabel.setText("Enchere invalide");
-					errorLabel.setTextFill(Color.FIREBRICK);
-				}
-				else {
 					Protocole.sendEnchere(userName, coups, out);
 					tuEnchere = true;
-				}
 			}
 			else {
 				errorLabel.setText("Veuillez saisir un nombre");
@@ -654,7 +642,6 @@ public class Client extends Application {
 			updatePlateau();
 			this.enigme = new Enigme(enigme);
 			this.plateau.setEnigme(this.enigme);
-			proposition = -1;
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				if (isAudioReady) {
@@ -665,6 +652,7 @@ public class Client extends Application {
 				Platform.runLater(new Runnable() {			
 					@Override
 					public void run() {
+						serverAnswer.setText("");
 						trouveEnchereButton.setText("Trouve");
 						trouveEnchereButton.setDisable(false);
 						coupTextField.setDisable(false);
@@ -691,7 +679,6 @@ public class Client extends Application {
 				}
 				updateTrouveEnchereButton("Encherir");
 				tuAsTrouve = false;
-				lastEnchere = proposition;
 			}
 			else {
 				System.err.println("["+Protocole.TU_AS_TROUVE+"] Je ne dois pas passer ici");
@@ -728,7 +715,6 @@ public class Client extends Application {
 				updateServerAnswer("La phase d'enchere commence");
 				updateTrouveEnchereButton("Encherir");
 				trouveEnchereButton.setDisable(false);
-				lastEnchere = Integer.MAX_VALUE;
 			}
 			else {
 				System.err.println("["+Protocole.FIN_REFLEXION+"] Je ne dois pas passer ici");
@@ -737,14 +723,6 @@ public class Client extends Application {
 		case Protocole.VALIDATION:
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				updateServerAnswer("Enchere validee");
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (enchere < lastEnchere) {
-							lastEnchere = enchere;
-						}
-					}
-				});
 				tuEnchere = false;				
 			}
 			else {
@@ -755,7 +733,6 @@ public class Client extends Application {
 			if (phase == Phase.ENCHERE && tuEnchere) {
 				user = Outils.getFirstArg(reponse);
 				updateServerAnswer("Enchere annulee car incoherente avec celle de "+user);
-				proposition = -1;
 				tuEnchere = false;				
 			}
 			else {
@@ -766,11 +743,7 @@ public class Client extends Application {
 			if (phase == Phase.ENCHERE) {
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
-				Integer enchere = Integer.parseInt(data);
 				updateServerAnswer(user+" a encheri avec "+data+" coups");
-				if (enchere < lastEnchere) {
-					lastEnchere = enchere;
-				}
 			}
 			else {
 				System.err.println("["+Protocole.NOUVELLE_ENCHERE+"] Je ne dois pas passer ici");
@@ -1122,13 +1095,13 @@ public class Client extends Application {
 	 * @param s le message a afficher
 	 */
 	private  void updateServerAnswer(String s) {
-		Thread t = new Thread(new Runnable() {
+		(new Runnable() {
 			@Override
 			public void run() {
 				serverAnswer.appendText(s+"\n");				
 			}
-		});
-		t.start();
+		}).run();
+
 	}
 
 	/**

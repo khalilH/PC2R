@@ -95,6 +95,10 @@ public class Bilan {
 			}
 		});
 	}
+	
+	public void reset() {
+		scoreSheet.clear();
+	}
 
 	/**
 	 * @author Ladislas HALIFA

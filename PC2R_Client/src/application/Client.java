@@ -410,7 +410,6 @@ public class Client extends Application {
 		}
 		catch (MediaException me) {
 			System.err.println("Probleme avec l'initialisation des sons");
-			me.printStackTrace();
 			return false;
 		}
 	}
@@ -618,6 +617,9 @@ public class Client extends Application {
 			phase = Phase.ATTENTE_TOUR;
 			updatePhaseLabel(phase);
 			updateServerAnswer("Debut Session");
+			if (bilan != null) {
+				bilan.reset();
+			}
 			if (plateau != null) {
 				plateau.reset();
 			}

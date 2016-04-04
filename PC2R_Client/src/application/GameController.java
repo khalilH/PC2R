@@ -124,11 +124,6 @@ public class GameController {
     @FXML private VBox solutionVBox;
     
     /**
-     * zone d'affichage du nombre de coups
-     */
-    @FXML private Label nombreCoupsLabel;
-    
-    /**
      * zone d'affichage du nombre de coups d'une solution
      */
     @FXML private Label coupsSolutionLabel;

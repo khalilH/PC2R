@@ -153,13 +153,8 @@
                <children>
                   <HBox alignment="CENTER" prefHeight="42.0" prefWidth="251.0" spacing="5.0">
                      <children>
-                        <TextField fx:id="coupTextField" prefHeight="25.0" prefWidth="65.0" promptText="Coups" />
-                        <Button fx:id="trouveEnchereButton" disable="true" mnemonicParsing="false" prefHeight="25.0" prefWidth="84.0" text="Trouve" textAlignment="CENTER" />
-                     </children>
-                  </HBox>
-                  <HBox alignment="CENTER">
-                     <children>
-                        <Label fx:id="nombreCoupsLabel" />
+                        <TextField fx:id="coupTextField" alignment="CENTER" disable="true" minHeight="-Infinity" minWidth="-Infinity" prefHeight="53.0" prefWidth="172.0" promptText="Coups" />
+                        <Button fx:id="trouveEnchereButton" disable="true" mnemonicParsing="false" prefHeight="53.0" prefWidth="84.0" text="Trouve" textAlignment="CENTER" />
                      </children>
                   </HBox>
                   <HBox alignment="CENTER">
@@ -186,8 +181,8 @@
                   </HBox>
                   <HBox alignment="CENTER" spacing="5.0">
                      <children>
-                        <TextArea fx:id="solutionTextArea" disable="true" editable="false" prefHeight="102.0" prefWidth="251.0" promptText="Cliquez ici" scrollTop="1.0" />
-                        <Button fx:id="solutionButton" disable="true" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Submit" />
+                        <TextArea fx:id="solutionTextArea" disable="true" editable="false" minHeight="-Infinity" minWidth="-Infinity" prefHeight="47.0" prefWidth="181.0" promptText="Cliquez ici" wrapText="true" />
+                        <Button fx:id="solutionButton" disable="true" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="47.0" prefWidth="84.0" text="Submit" />
                      </children>
                   </HBox>
                   <Label fx:id="coupsSolutionLabel">

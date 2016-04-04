@@ -133,19 +133,19 @@ public class Bot {
 			Protocole.sendChat(userName, "Hi I'm "+userName, out);
 			break;
 		case Protocole.VAINQUEUR:
+			phase = Phase.ATTENTE_TOUR;
 			data = Outils.getFirstArg(reponse);
 			System.out.println("Fin de la session");
 			break;
 		case Protocole.TOUR:
 			data= Outils.getSecondArg(reponse);
-			// TODO lancer timer
 			if (phase == Phase.ATTENTE_TOUR) {
 				phase = Phase.REFLEXION;
 				System.out.println("Phase de reflexion");
 				attendre(4);
-				if (Math.random() < 0.7) {
+				if (Math.random() < 0.4) {
 					message = BotData.getMessageProvoc();
-					Protocole.sendChat(userName, BotData.MESSAGE_PROVOC, out);
+					Protocole.sendChat(userName, BotData.getMessageProvoc(), out);
 				}
 			}
 			else {
@@ -166,7 +166,7 @@ public class Bot {
 				}
 				double alea = rand.nextDouble();
 				System.out.println("proba enchere "+alea);
-				if (alea < 0.7) {
+				if (alea < 0.3) {
 					attendre(3);
 					int enchere = lastEnchere - rand.nextInt(5) - 2;
 					if (enchere > 0) {
@@ -336,7 +336,7 @@ public class Bot {
 			}
 			break;
 		case Protocole.FIN_RESOLUTION:
-			if (phase == Phase.RESOLUTION) {
+			if (phase == Phase.RESOLUTION || phase == Phase.ENCHERE) {
 				System.out.println("Plus de joueurs restants");
 				System.out.println("Fin du tour");
 				phase = Phase.ATTENTE_TOUR;

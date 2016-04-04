@@ -144,7 +144,7 @@ public class Outils {
 		Random rand = new Random(System.currentTimeMillis());
 		String tmp = "";
 		double alea; 
-		for (int i = 0; i < monEnchere-1; i++) {
+		for (int i = 0; i < monEnchere; i++) {
 			alea = rand.nextDouble();
 			if (alea < 0.25) {
 				tmp += "R";

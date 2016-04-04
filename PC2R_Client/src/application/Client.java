@@ -410,6 +410,7 @@ public class Client extends Application {
 		}
 		catch (MediaException me) {
 			System.err.println("Probleme avec l'initialisation des sons");
+//			me.printStackTrace();
 			return false;
 		}
 	}

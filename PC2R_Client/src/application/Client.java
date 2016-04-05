@@ -260,9 +260,6 @@ public class Client extends Application {
 					event.consume();
 					envoyerMessageChat();
 				}
-				else if(event.getCode() == KeyCode.SLASH) {
-					event.consume();
-				}
 			}
 			
 		});
@@ -550,8 +547,8 @@ public class Client extends Application {
 	private void envoyerSolution() {
 		if (phase == Phase.RESOLUTION) {
 			String deplacements = solutionTextArea.getText();
-			currentSolution = "";
 			if (Outils.isValidSolution(deplacements)) {
+				currentSolution = "";
 				Protocole.sendSolution(userName,deplacements,out);
 				solutionTextArea.setText("");
 				solutionButton.setDisable(true);

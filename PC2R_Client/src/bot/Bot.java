@@ -1,4 +1,4 @@
-package rasendeRoboter;
+package bot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,6 +8,15 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Random;
 
+import application.Outils;
+import application.Protocole;
+import rasendeRoboter.Phase;
+
+/**
+ * 
+ * @author Ladislas Halifa
+ * Client autonome idiot essayant de se faire passer pour un humain
+ */
 public class Bot {
 	public static String myName;
 	@SuppressWarnings("unused")
@@ -38,6 +47,16 @@ public class Bot {
 		socket = connexion(userName, host);
 	}
 
+	
+
+	public static void main(String[] args) {
+		if (args.length != 1) {
+			System.err.println("usage: java -jar bot.jar <host>");
+		}
+		else {
+			new Bot(args[0]);
+		}
+	}
 
 	private void attendre(long secondes) {
 		try {
@@ -79,15 +98,6 @@ public class Bot {
 		return socket;
 	}
 
-	public static void main(String[] args) {
-		if (args.length != 1) {
-			System.err.println("usage: java -jar bot.jar <host>");
-		}
-		else {
-			new Bot(args[0]);
-		}
-	}
-
 	public synchronized void decoderReponseServer(String reponse) {
 		String commande = Outils.getCommandeName(reponse);
 		String user, message, data;
@@ -102,7 +112,7 @@ public class Bot {
 				String msg = BotData.getMessageBienvenue()+" "+user;
 				Protocole.sendChat(userName, msg, out);
 			}
-			if (Math.random() > 0.992) {
+			if (Math.random() > 0.95) {
 				attendre(2);
 				Protocole.sendChat(userName, BotData.getMessageBye(), out);
 				attendre (1);
@@ -118,10 +128,17 @@ public class Bot {
 			System.out.println("recu : "+message+" de la part de "+user);
 			if (!user.equals(userName)) {
 
-				if (Math.random() < 0.7) {
+				if (Math.random() < 0.4) {
 					attendre(2);
 					String msg = BotData.getMessageOK();
 					Protocole.sendChat(userName, msg, out);
+				}
+				
+				if (Math.random() > 0.95) {
+					attendre(2);
+					Protocole.sendChat(userName, BotData.getMessageBye(), out);
+					attendre (1);
+					Protocole.disconnect(userName, out);
 				}
 			}
 			break;
@@ -193,6 +210,12 @@ public class Bot {
 					monEnchere = 53;
 					lastEnchere = 53;
 				}
+				if (Math.random() > 0.95) {
+					attendre(2);
+					Protocole.sendChat(userName, BotData.getMessageBye(), out);
+					attendre (1);
+					Protocole.disconnect(userName, out);
+				}
 			}
 			else {
 				System.err.println("[FIN_REFLEXION] Je ne dois pas passer ici");
@@ -224,8 +247,8 @@ public class Bot {
 				System.out.println(user+" a encheri avec "+data+" coups");
 				lastEnchere = Integer.parseInt(data);
 				double alea = rand.nextDouble();
-				System.out.println("proba : "+alea+"  70%");
-				if (alea < 0.7) {
+				System.out.println("proba : "+alea+"  50%");
+				if (alea < 0.5) {
 					attendre(3);
 					int enchere = lastEnchere - rand.nextInt(5)-2;
 					System.out.println("lastEnchere = "+lastEnchere);
@@ -260,7 +283,7 @@ public class Bot {
 					}
 				}
 				else {
-					String sol = Outils.genererSolution(monEnchere);
+					String sol = genererSolution(monEnchere);
 					lastActif = userName;
 					System.out.println("solution a envoye = "+sol);
 					int alea = rand.nextInt(8) + 7;
@@ -321,7 +344,7 @@ public class Bot {
 					lastActif = user;
 				}
 				else {
-					String sol = Outils.genererSolution(monEnchere);
+					String sol = genererSolution(monEnchere);
 					lastActif = userName;
 					System.out.println("solution a envoye = "+sol);
 					int alea = rand.nextInt(8) + 7;
@@ -357,7 +380,7 @@ public class Bot {
 					System.out.println("Le joueur actif est "+user);
 				}
 				else {
-					String sol = Outils.genererSolution(monEnchere);
+					String sol = genererSolution(monEnchere);
 					lastActif = userName;
 					System.out.println("solution a envoye = "+sol);
 					int alea = rand.nextInt(8) + 7;
@@ -374,6 +397,42 @@ public class Bot {
 			System.out.println("default "+reponse);
 			break;
 		}
+	}
+	
+
+	private String genererSolution(int monEnchere) {
+		Random rand = new Random(System.currentTimeMillis());
+		String tmp = "";
+		double alea; 
+		for (int i = 0; i < monEnchere; i++) {
+			alea = rand.nextDouble();
+			if (alea < 0.25) {
+				tmp += "R";
+			}
+			else if (alea < 0.5) {
+				tmp += "B";
+			}
+			else if (alea < 0.75) {
+				tmp += "J";
+			}
+			else {
+				tmp += "V";
+			}
+			alea = rand.nextDouble();
+			if (alea < 0.25) {
+				tmp += "H";
+			}
+			else if (alea < 0.5) {
+				tmp += "B";
+			}
+			else if (alea < 0.75) {
+				tmp += "G";
+			}
+			else {
+				tmp += "D";
+			}
+		}
+		return tmp;
 	}
 
 	String recu;

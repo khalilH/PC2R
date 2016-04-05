@@ -19,12 +19,12 @@ public class Case {
 	BorderPane caseGUI;
 	
 	/**
-	 * la couleur de la cible si cette case est une cible (R, B, J, V)
+	 * la couleur (R, B, J, V) de la cible si cette case est une cible
 	 */
 	String cible;
 	
 	/**
-	 * la couleur du robot present sur la case si elle en contient un (R, B, J, V)
+	 * la couleur  (R, B, J, V) du robot present sur la case si elle en contient un
 	 */
 	String robot;
 	
@@ -46,8 +46,8 @@ public class Case {
 	private boolean droit;
 
 	/**
-	 * Constructeur, initialise une case vide ne contenant pas de murs, 
-	 * et n'etant pas marquee comme cible
+	 * Initialise une case vide ne contenant pas de murs, et n'etant pas 
+	 * marquee comme  une cible
 	 */
 	public Case() {
 		caseGUI = new BorderPane();
@@ -89,14 +89,6 @@ public class Case {
 	 */
 	public boolean isDroit() {
 		return droit;
-	}
-
-	/**
-	 *  Verifie si la case est une cible
-	 * @return true si la case est une cible, false sinon
-	 */
-	public boolean isCible() {
-		return !cible.equals("");
 	}
 
 	/**
@@ -156,6 +148,13 @@ public class Case {
 	}
 
 	/**
+	 * Permet de retirer une cible de la case
+	 */
+	public void enleverCible() {
+		cible = "";
+	}
+
+	/**
 	 * Retire le robot de la case
 	 */
 	public void enleverRobot() {
@@ -176,8 +175,8 @@ public class Case {
 	}
 
 	/**
-	 * Construit un mur de la case
-	 * @param mur lettre representant le mur a construire
+	 * Permet de placer un mur sur la case 
+	 * @param mur lettre representant le mur a placer
 	 */
 	protected void buildWall(String mur) {
 		if (mur.equals("H")) {
@@ -193,12 +192,12 @@ public class Case {
 			setDroit(true);
 		}	
 		else {
-			System.err.println("Case.buildWall - je ne dois pas passer ici");
+			System.err.println("[Case.buildWall] - je ne dois pas passer ici");
 		}
 	}
 
 	/**
-	 * Construit l'affichage du mur gauche
+	 * Construit l'affichage du mur gauche de la case
 	 */
 	private void buildLeftWall() {
 		Pane left = new Pane();
@@ -209,7 +208,7 @@ public class Case {
 	}
 
 	/**
-	 * Construit l'affichage du mur droit
+	 * Construit l'affichage du mur droit de la case
 	 */
 	private void buildRightWall() {
 		Pane right = new Pane();
@@ -219,7 +218,7 @@ public class Case {
 	}
 
 	/**
-	 * Construit l'affichage du mur haut
+	 * Construit l'affichage du mur haut de la case
 	 */
 	private void buildTopWall() {
 		Pane top = new Pane();
@@ -229,7 +228,7 @@ public class Case {
 	}
 
 	/**
-	 * Construit l'affichage du mur bas
+	 * Construit l'affichage du mur bas de la case
 	 */
 	private void buildBotWall() {
 		Pane bot = new Pane();
@@ -320,8 +319,8 @@ public class Case {
 	}
 
 	/**
-	 * Construit l'affichage de la case
-	 * @return le BorderPane de la case
+	 * Permet de construire l'affichage de la case
+	 * @return le BorderPane de la case a afficher sur le plateau
 	 */
 	public BorderPane render() {
 		caseGUI.getChildren().clear();
@@ -338,10 +337,6 @@ public class Case {
 		if (isGauche())
 			buildLeftWall();
 		return caseGUI;
-	}
-
-	public void enleverCible() {
-		cible = "";
 	}
 
 }

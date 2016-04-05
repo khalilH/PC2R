@@ -7,19 +7,20 @@ import java.awt.Point;
  * @author Ladislas Halifa
  * Cette classe permet de representer une enigme composee des positions
  * initiales des robots rouge, bleu, jaune, vert et de la cible ainsi que la 
- * couleur de la cible
+ * couleur de cette derniere
  */
 
 
 public class Enigme {
 	/* robots[0] = rouge */
-	/* robots[1] = bleu*/
+	/* robots[1] = bleu */
 	/* robots[2] = jaune */
 	/* robots[3] = vert */
 	/* robots[4] = cible */
 
 	/**
-	 * Tableau de Point
+	 * Tableau de Point representant les positions des robots et de la cible
+	 * de l'enigme
 	 */
 	private Point[] robots;
 	/**
@@ -28,7 +29,7 @@ public class Enigme {
 	private String cible;
 
 	/**
-	 * Contructeur d'une Enigme
+	 * Instancie une enigme a partir de sa description textuelle
 	 * @param enigme la description d'une enigme
 	 */
 	public Enigme(String enigme) {
@@ -61,7 +62,8 @@ public class Enigme {
 
 	/**
 	 * Getter de la position initiale du robot rouge
-	 * @return un Point contenant la ligne et la colonne de la position du robot
+	 * @return un Point contenant la ligne et la colonne de la position initiale
+	 * du robot rouge
 	 */
 	public Point getRouge() {
 		return robots[0];
@@ -69,7 +71,8 @@ public class Enigme {
 
 	/**
 	 * Getter de la position initiale du robot bleu
-	 * @return un Point contenant la ligne et la colonne de la position du robot
+	 * @return un Point contenant la ligne et la colonne de la position initiale
+	 * du robot bleu
 	 */
 	public Point getBleu() {
 		return robots[1];
@@ -77,7 +80,8 @@ public class Enigme {
 
 	/**
 	 * Getter de la position initiale du robot jaune
-	 * @return un Point contenant la ligne et la colonne de la position du robot
+	 * @return un Point contenant la ligne et la colonne de la position initiale
+	 * du robot jaune
 	 */
 	public Point getJaune() {
 		return robots[2];
@@ -85,15 +89,17 @@ public class Enigme {
 
 	/**
 	 * Getter de la position initiale du robot vert
-	 * @return un Point contenant la ligne et la colonne de la position du robot
+	 * @return un Point contenant la ligne et la colonne de la position initiale
+	 * du robot vert
 	 */
 	public Point getVert() {
 		return robots[3];
 	}
 
 	/**
-	 * Getter de la position de la cible
-	 * @return Point contenant la ligne et la colonne de la position de la cible
+	 * Getter de la position initiale de la cible
+	 * @return Point contenant la ligne et la colonne de la position initiale 
+	 * de la cible
 	 */
 	public Point getCiblePosition() {
 		return robots[4];
@@ -107,8 +113,4 @@ public class Enigme {
 		return cible;
 	}
 
-	public static void main(String[] args) {
-		Enigme n = new Enigme("(13,5,9,12,6,1,5,14,8,5,R)");
-		System.out.println(n.toString());
-	}
 }

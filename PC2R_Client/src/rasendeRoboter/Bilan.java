@@ -59,7 +59,7 @@ public class Bilan {
 	}
 
 	/**
-	 * Permet de parser un bilan
+	 * Permet de parser un bilan a partir de sa description textuelle
 	 * @param bilan chaine de caractere representant l'etat courant 
 	 * d'une session envoyee par le serveur
 	 */
@@ -96,13 +96,17 @@ public class Bilan {
 		});
 	}
 	
+	/**
+	 * Permet de remettre a zero les scores d'une partie lors du lancement
+	 * d'une nouvelle session
+	 */
 	public void reset() {
 		scoreSheet.clear();
 	}
 
 	/**
 	 * @author Ladislas HALIFA
-	 * Cette classe interne permet de representer le score d'un joueur en 
+	 * Classe interne permet de representer le score d'un joueur en 
 	 * utilisant des SimpleProperty
 	 */
 	public static class Score {

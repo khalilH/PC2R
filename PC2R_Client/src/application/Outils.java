@@ -1,7 +1,6 @@
-package rasendeRoboter;
+package application;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -50,7 +49,8 @@ public class Outils {
 	}
 
 	/**
-	 * Verifie qu'un nom d'utilisateur valide
+	 * Verifie qu'un nom d'utilisateur est valide (compose uniquement de
+	 * caracteres alpha-numerique)
 	 * @param username le nom d'utilisateur a tester
 	 * @return true si le pseudo est valide, false sinon
 	 */
@@ -61,7 +61,8 @@ public class Outils {
 	}
 
 	/**
-	 * Verifie que l'adresse IPv4 du serveur est valide
+	 * Verifie que l'adresse IPv4 du serveur est valide (composee de quatre
+	 * nombres compris entre 0 et 255)
 	 * @param host l'adresse a tester
 	 * @return true si l'adresse est valide, false sinon 
 	 */
@@ -119,7 +120,12 @@ public class Outils {
 			return false;
 		return deplacements.matches("([RBJV][HBGD])+");
 	}
-	
+
+	/**
+	 * Verifie que la description d'un plateau est bien formee
+	 * @param plateau
+	 * @return true si le plateau est valide, false sinon
+	 */
 	public static boolean isValidPlateau(String plateau) {
 		if (plateau == null || plateau.equals(""))
 			return false;
@@ -140,39 +146,5 @@ public class Outils {
 		return coups;
 	}
 
-	public static String genererSolution(int monEnchere) {
-		Random rand = new Random(System.currentTimeMillis());
-		String tmp = "";
-		double alea; 
-		for (int i = 0; i < monEnchere; i++) {
-			alea = rand.nextDouble();
-			if (alea < 0.25) {
-				tmp += "R";
-			}
-			else if (alea < 0.5) {
-				tmp += "B";
-			}
-			else if (alea < 0.75) {
-				tmp += "J";
-			}
-			else {
-				tmp += "V";
-			}
-			alea = rand.nextDouble();
-			if (alea < 0.25) {
-				tmp += "H";
-			}
-			else if (alea < 0.5) {
-				tmp += "B";
-			}
-			else if (alea < 0.75) {
-				tmp += "G";
-			}
-			else {
-				tmp += "D";
-			}
-		}
-		return tmp;
-	}
 }
 

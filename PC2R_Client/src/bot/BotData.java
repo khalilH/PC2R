@@ -1,7 +1,13 @@
-package rasendeRoboter;
+package bot;
 
 import java.util.Random;
 
+/**
+ * 
+ * @author Ladislas Halifa
+ * Cette classe contient des constantes pour le Bot, ainsi que quelques 
+ * methodes pour choisir une constante aleatoirement
+ */
 public class BotData {
 
 	private static final Random rand = new Random(System.currentTimeMillis());
@@ -77,6 +83,7 @@ public class BotData {
 	public static final String MESSAGE_OK_3= "c'est vrai";
 	public static final String MESSAGE_OK_4= "j'avoue";
 	public static final String MESSAGE_OK_5= "oui";
+	public static final String MESSAGE_OK_6= "non";
 
 	public static final String[] OK = 
 		{
@@ -85,12 +92,13 @@ public class BotData {
 				MESSAGE_OK_2, 
 				MESSAGE_OK_3,
 				MESSAGE_OK_4,
-				MESSAGE_OK_5
+				MESSAGE_OK_5,
+				MESSAGE_OK_6
 		};
 
 	public static final String MESSAGE_PROVOC = "Trop facile";
 	public static final String MESSAGE_PROVOC_2 = "beaucoup trop simple pour moi";
-	public static final String MESSAGE_PROVOC_3 = "c'est pour moi";
+	public static final String MESSAGE_PROVOC_3 = "Hmm interessant";
 	public static final String MESSAGE_PROVOC_4 = "celle la elle est pour moi";
 	public static final String MESSAGE_PROVOC_5 = "facile";
 	public static final String MESSAGE_PROVOC_6 = "pas facile cette enigme";

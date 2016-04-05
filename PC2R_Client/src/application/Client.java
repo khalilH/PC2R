@@ -44,10 +44,8 @@ import javafx.util.Duration;
 import rasendeRoboter.Bilan;
 import rasendeRoboter.Bilan.Score;
 import rasendeRoboter.Enigme;
-import rasendeRoboter.Outils;
 import rasendeRoboter.Phase;
 import rasendeRoboter.Plateau;
-import rasendeRoboter.Protocole;
 
 /**
  * 
@@ -68,13 +66,14 @@ public class Client extends Application {
 
 
 	/* Client stuff */
-	private Calendar calendar = Calendar.getInstance();
-	DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-	private String userName;
-	private Socket socket;
 	private BufferedReader in;
+	private Calendar calendar = Calendar.getInstance();
+	private DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 	private PrintStream out;
 	private Receive receiver;
+	private Socket socket;
+	private Stage stage;
+	private String userName;
 
 	/* Audio */
 	Media correctSound = null;
@@ -120,7 +119,7 @@ public class Client extends Application {
 	private Label coupsSolutionLabel;
 	private Label phaseLabel;
 	private Label tourLabel;
-	private Stage stage;
+	
 	private Text errorMessageText;
 	private TextArea solutionTextArea;
 	private TextArea serverAnswer;
@@ -225,7 +224,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * ajout des EventHandler 
+	 * Ajout des EventHandler  
 	 */
 	private void installEventHandler() {
 		/* taper entree pour essayer de connecter au serveur*/
@@ -469,7 +468,8 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet de signaler au serveur que le client se deconnecte
+	 * Permet de signaler au serveur que le client se deconnecte, et de liberer
+	 * les ressources audio si besoin
 	 */
 	private void deconnexion() {
 		if(out != null) {
@@ -494,7 +494,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet d'envoyer un message de chat
+	 * Permet d'envoyer un message instantanne
 	 */
 	private void envoyerMessageChat() {
 		String msg = sendChatTextArea.getText();
@@ -952,24 +952,24 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Lance l'animation d'une solution
-	 * @param data la solution a afficher
+	 * Permet de lancer une animation de huit secondes d'une solution proposee 
+	 * @param data la solution a afficher sur le plateau
 	 */
 	private void startAnimation(String data) {
 		ArrayList<String> coups = Outils.getCoups(data);
-		/* Calcul de l'intervalle d'affichage entre chaque 
-		 * deplacement d'une case */
+		/* pre-calcul de l'intervalle de temps necessaire entre chaque 
+		 * deplacement d'une case pour avoir une animation totale de huit
+		 * secondes */
 		(new Runnable() {
-
 			@Override
 			public void run() {
-				Plateau d = new Plateau(plateau.toString());
-				Enigme ee = new Enigme(plateau.getEnigme().toString());
-				d.setEnigme(ee);
+				Plateau copiePlateau = new Plateau(plateau.toString());
+				Enigme copieEnigme = new Enigme(plateau.getEnigme().toString());
+				copiePlateau.setEnigme(copieEnigme);
 
 				int nbMove = 1;
 				for (String coup : coups) {
-					while(d.move(coup)) {
+					while(copiePlateau.move(coup)) {
 						nbMove++;
 					}
 				}
@@ -977,6 +977,7 @@ public class Client extends Application {
 			}
 		}).run();
 
+		/* Debut effectif de l'animation */
 		int nbCoups = 1;
 		for(String coup : coups) {
 			while (plateau.move(coup)) {
@@ -986,26 +987,28 @@ public class Client extends Application {
 					e.printStackTrace();
 				}
 				Platform.runLater(new Runnable() {
-
 					@Override
 					public void run() {
 						updatePlateauAnim();
 					}
 				});
-				
 			}
 			updateNombreCoupsSolution(nbCoups);
 			nbCoups++;
 		}
 	}
 
+	/**
+	 * Permet de recuperer l'heure pour la messagerie instantannee
+	 * @return une chaine de caractere de l'heure
+	 */
 	private String getTime() {
 		calendar = Calendar.getInstance();
 		return "["+dateFormat.format(calendar.getTime())+"] ";
 	}
 
 	/**
-	 * mise a jour du tableau de scores
+	 * Mise a jour visuelle du tableau des scores et du numero de tour courant
 	 */
 	private void updateBilan() {
 		Platform.runLater( new Runnable() {
@@ -1020,26 +1023,27 @@ public class Client extends Application {
 
 	/**
 	 * Permet d'afficher les messages instantannes recus
-	 * @param s le message a afficher
+	 * @param msg le message a afficher
 	 */
-	private void updateChat(String s) {
+	private void updateChat(String msg) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				chatTextArea.appendText(getTime()+s+"\n");
+				chatTextArea.appendText(getTime()+msg+"\n");
 			}
 		});
 	}
 
 	/**
-	 * mise a jour du nombre de coups d'une solution
-	 * @param n le nombre de coups de la solution
+	 * Met a jour visuellement le nombre de coups actuel d'une solution en 
+	 * train d'etre affichee sur le plateau
+	 * @param nbCoups le nombre de coups de la solution
 	 */
-	private void updateNombreCoupsSolution(int n) {
+	private void updateNombreCoupsSolution(int nbCoups) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				coupsSolutionLabel.setText(n+" coups");
+				coupsSolutionLabel.setText(nbCoups+" coups");
 				coupsSolutionLabel.setTextFill(Color.BLUEVIOLET);
 			}
 		});
@@ -1047,14 +1051,14 @@ public class Client extends Application {
 
 	/**
 	 * Permet de mettre a jour l'affichage de la phase courante
-	 * @param p
+	 * @param phase la nouvelle phase
 	 */
-	private void updatePhaseLabel(Phase p) {
+	private void updatePhaseLabel(Phase phase) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
 				String s = "";
-				switch(p) {
+				switch(phase) {
 				case ATTENTE_TOUR:
 					s = "ATTENTE DU TOUR SUIVANT";
 					break;
@@ -1074,7 +1078,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Mise a jour plateau statique 
+	 * Permet de mettre a jour l'affichage du plateau 
 	 */
 	private void updatePlateau(){
 		Platform.runLater( new Runnable() {
@@ -1097,7 +1101,8 @@ public class Client extends Application {
 	}
 
 	/**
-	 * mise a jour plateau dynamique pour affichage de la solution
+	 * Permet de mettre a jour l'affichage du plateau a chaque deplacement
+	 * de case d'un robot lors de l'animation d'une solution
 	 */
 	private void updatePlateauAnim(){
 		BorderPane caseGUI;
@@ -1116,14 +1121,14 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet d'affiche message du serveur 
-	 * @param s le message a afficher
+	 * Permet d'afficher un message du serveur 
+	 * @param msg le message a afficher
 	 */
-	private  void updateServerAnswer(String s) {
+	private  void updateServerAnswer(String msg) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				serverAnswer.appendText(s+"\n");
+				serverAnswer.appendText(msg+"\n");
 			}
 		});
 
@@ -1145,7 +1150,8 @@ public class Client extends Application {
 	/**
 	 * 
 	 * @author Ladislas Halifa
-	 * Service toujours a l'ecoute du serveur
+	 * Service toujours a l'ecoute du serveur, lance une nouvelle Thread
+	 * qui va traiter la commande recue.
 	 */
 	class Receive extends Service<Void> {
 		String recu;

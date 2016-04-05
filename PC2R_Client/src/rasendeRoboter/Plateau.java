@@ -4,6 +4,8 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import application.Outils;
+
 /**
  * @author Ladislas Halifa 
  * Cette classe permet de representer l'etat d'un plateau ainsi qu'une enigme.
@@ -23,7 +25,7 @@ public class Plateau {
 	/**
 	 * Initialise une instance de Plateau, sans enigme
 	 * @param description decrit l'etat du plateau pour une session, compose
-	 * d'une suite de mur
+	 * d'une suite de murs
 	 */
 	public Plateau(String description) {
 		plateau = new Case[16][16];
@@ -34,7 +36,7 @@ public class Plateau {
 		}
 		enigme = null;
 		robots = new HashMap<String,Point>();
-		decoderString(description);
+		parserPlateau(description);
 	}
 
 	/**
@@ -75,6 +77,14 @@ public class Plateau {
 	}
 
 	/**
+	 * Getter de l'enigme
+	 * @return l'instance de l'enigme courante
+	 */
+	public Enigme getEnigme() {
+		return enigme;
+	}
+
+	/**
 	 * Prepare le plateau avec les positions des robots et de la cible d'une
 	 * enigme donne
 	 * @param enigme une instance d'enigme
@@ -112,13 +122,16 @@ public class Plateau {
 			placerRobot();
 	}
 
+	/**
+	 * Permet de retirer du plateau les robots ainsi que la cible si elle
+	 * existe 
+	 */
 	public void enleverRobots() {
 		if (enigme != null) {
 			Point cible = enigme.getCiblePosition();
 			plateau[cible.x][cible.y].enleverCible();
 		}
 		for(Entry<String, Point> e : robots.entrySet()) {
-			System.out.println(e.getKey()+" "+e.getValue().toString());
 			plateau[e.getValue().x][e.getValue().y].enleverRobot();
 		}
 	}
@@ -126,7 +139,7 @@ public class Plateau {
 
 
 	/**
-	 * Effectue un deplacement a partir d'un coup
+	 * Effectue un deplacement d'une case a partir d'un coup
 	 * @param coup le deplacement a effectue constitue de deux lettres, la 
 	 * premiere represente la couleur du robot (R, B, J, V), 
 	 * la deuxieme la direction du deplacement (H, B, G, D)
@@ -140,55 +153,47 @@ public class Plateau {
 		if (p != null) {
 			switch (direction) {
 			case "G":
-				if (p.y != 0) {
-					if (!plateau[p.x][p.y].isGauche() && !plateau[p.x][p.y-1].isDroit() && 
-							plateau[p.x][p.y-1].isVide()) {
-						plateau[p.x][p.y].enleverRobot();
-						p.setLocation(p.x, p.y-1);
-						plateau[p.x][p.y].setRobot(color);
-						robots.put(color, p);
-						hasMove = true;
-					}
+				if (p.y != 0 && !plateau[p.x][p.y].isGauche() && !plateau[p.x][p.y-1].isDroit() && 
+				plateau[p.x][p.y-1].isVide()) {
+					plateau[p.x][p.y].enleverRobot();
+					p.setLocation(p.x, p.y-1);
+					plateau[p.x][p.y].setRobot(color);
+					robots.put(color, p);
+					hasMove = true;
 				}
 				break;
 			case "D":
-				if (p.y != 15) {
-					if (!plateau[p.x][p.y].isDroit() && !plateau[p.x][p.y+1].isGauche() && 
-							plateau[p.x][p.y+1].isVide()) {
-						plateau[p.x][p.y].enleverRobot();
-						p.setLocation(p.x, p.y+1);
-						plateau[p.x][p.y].setRobot(color);
-						robots.put(color, p);
-						hasMove = true;
-					}
+				if (p.y != 15 && !plateau[p.x][p.y].isDroit() && !plateau[p.x][p.y+1].isGauche() && 
+				plateau[p.x][p.y+1].isVide()) {
+					plateau[p.x][p.y].enleverRobot();
+					p.setLocation(p.x, p.y+1);
+					plateau[p.x][p.y].setRobot(color);
+					robots.put(color, p);
+					hasMove = true;
 				}
 				break;
 			case "H":
-				if (p.x != 0) {
-					if (!plateau[p.x][p.y].isHaut() && !plateau[p.x-1][p.y].isBas() && 
-							plateau[p.x-1][p.y].isVide()) {
-						plateau[p.x][p.y].enleverRobot();
-						p.setLocation(p.x-1, p.y);
-						plateau[p.x][p.y].setRobot(color);
-						robots.put(color, p);
-						hasMove = true;
-					}
+				if (p.x != 0 && !plateau[p.x][p.y].isHaut() && !plateau[p.x-1][p.y].isBas() && 
+				plateau[p.x-1][p.y].isVide()) {
+					plateau[p.x][p.y].enleverRobot();
+					p.setLocation(p.x-1, p.y);
+					plateau[p.x][p.y].setRobot(color);
+					robots.put(color, p);
+					hasMove = true;
 				}
 				break;
 			case "B":
-				if (p.x != 15) {
-					if (!plateau[p.x][p.y].isBas() && !plateau[p.x+1][p.y].isHaut() && 
-							plateau[p.x+1][p.y].isVide()) {
-						plateau[p.x][p.y].enleverRobot();
-						p.setLocation(p.x+1, p.y);
-						plateau[p.x][p.y].setRobot(color);
-						robots.put(color, p);
-						hasMove = true;
-					}
+				if (p.x != 15 && !plateau[p.x][p.y].isBas() && !plateau[p.x+1][p.y].isHaut() && 
+				plateau[p.x+1][p.y].isVide()) {
+					plateau[p.x][p.y].enleverRobot();
+					p.setLocation(p.x+1, p.y);
+					plateau[p.x][p.y].setRobot(color);
+					robots.put(color, p);
+					hasMove = true;
 				}
 				break;
 			default:
-				System.err.println("move : je ne dois pas passer ici");
+				System.err.println("[Plateau::move] : je ne dois pas passer ici");
 				break;
 			}
 		}
@@ -204,18 +209,23 @@ public class Plateau {
 	 * @param description decrit l'etat du plateau pour une session, compose
 	 * d'une suite de mur
 	 */
-	public void decoderString(String description) {
-		String tmp = description.replaceAll("\\)\\(", "\\);\\(");
-		String tmpTab[] = tmp.split(";");
-		for (String s : tmpTab) {
-			if (s.length() > 1) {
-				String aux = s.substring(1, s.length()-1);
-				String auxTab[] = aux.split(",");
-				int i = Integer.parseInt(auxTab[0]);
-				int j = Integer.parseInt(auxTab[1]);
-				String mur = auxTab[2];
-				plateau[i][j].buildWall(mur);
+	public void parserPlateau(String description) {
+		if (Outils.isValidPlateau(description)) {
+			String tmp = description.replaceAll("\\)\\(", "\\);\\(");
+			String tmpTab[] = tmp.split(";");
+			for (String s : tmpTab) {
+				if (s.length() > 1) {
+					String aux = s.substring(1, s.length()-1);
+					String auxTab[] = aux.split(",");
+					int i = Integer.parseInt(auxTab[0]);
+					int j = Integer.parseInt(auxTab[1]);
+					String mur = auxTab[2];
+					plateau[i][j].buildWall(mur);
+				}
 			}
+		}
+		else {
+			System.err.println("[Plateau::decoderString] plateau non valide");
 		}
 	}
 
@@ -250,21 +260,6 @@ public class Plateau {
 			}
 		}
 		return ret;
-	}
-
-	public Enigme getEnigme() {
-		return enigme;
-	}
-
-
-	public static void main(String[] args) {
-		Plateau p = new Plateau("(0,3,D)(0,11,D)(0,13,B)(1,12,D)(2,5,D)(2,5,B)(2,9,D)(2,9,B)(4,0,B)(4,2,D)(4,2,H)(4,15,H)(5,7,G)(5,7,B)(5,14,G)(5,14,B)(6,1,G)(6,1,H)(6,11,H)(6,11,D)(7,7,G)(7,7,H)(7,8,H)(7,8,D)(8,7,G)(8,7,B)(8,8,B)(8,8,D)(8,5,H)(8,5,D)(9,1,D)(9,1,B)(9,12,D)(9,15,B)(10,4,G)(10,4,B)(11,0,B)(12,9,H)(12,9,G)(13,5,D)(13,5,H)(13,14,G)(13,14,B)(14,3,G)(14,3,H)(14,11,D)(14,11,B)(15,14,G)(15,6,D)");
-		if (Outils.isValidPlateau(p.toString())) {
-			System.out.println("BON");
-		}
-		else {
-			System.out.println("MAUVAIS");
-		}
 	}
 
 }

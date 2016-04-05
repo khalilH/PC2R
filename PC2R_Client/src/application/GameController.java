@@ -15,7 +15,7 @@ import rasendeRoboter.Bilan.Score;
 /**
  * 
  * @author Ladislas Halifa
- * Controlleur de la vue Client
+ * Controlleur de la vue Client, necessaire mais rien n'est fait ici
  */
 public class GameController {
 	/**
@@ -23,14 +23,13 @@ public class GameController {
 	 */
 	@FXML private BorderPane mainFrame;
 	
-	
 	/**
 	 * zone de saisie du nom d'utilisateur
 	 */
     @FXML private TextField userTextField;
 
     /**
-     * bouton de connexiont
+     * bouton de connexion
      */
     @FXML private Button loginButton;
 

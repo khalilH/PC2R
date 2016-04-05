@@ -1,4 +1,4 @@
-package rasendeRoboter;
+package application;
 
 import java.io.PrintStream;
 
@@ -6,7 +6,7 @@ import java.io.PrintStream;
  * 
  * @author Ladislas Halifa
  * Cette classe contient les commandes du Protocole ainsi que des methodes pour
- * envoyer des requete au serveur
+ * envoyer des requetes bien formees au serveur
  */
 public class Protocole {
 
@@ -66,7 +66,7 @@ public class Protocole {
 	}
 
 	/**
-	 * Envoie une requete de chat au serveur
+	 * Envoie une requete de message instantanne au serveur
 	 * @param username l'utilisateur envoyant un message
 	 * @param message le message a envoyer
 	 * @param out PrintStream du serveur

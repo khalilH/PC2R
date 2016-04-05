@@ -123,7 +123,7 @@ public class Outils {
 
 	/**
 	 * Verifie que la description d'un plateau est bien formee
-	 * @param plateau
+	 * @param plateau la description textuelle du plateau
 	 * @return true si le plateau est valide, false sinon
 	 */
 	public static boolean isValidPlateau(String plateau) {

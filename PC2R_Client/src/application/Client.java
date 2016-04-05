@@ -49,7 +49,7 @@ import rasendeRoboter.Plateau;
 
 /**
  * 
- * @author Ladislas Halifa
+ * @author Ladislas Halifa -
  * Classe Principale du Client
  */
 public class Client extends Application {

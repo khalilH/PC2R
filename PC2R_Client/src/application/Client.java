@@ -260,7 +260,11 @@ public class Client extends Application {
 					event.consume();
 					envoyerMessageChat();
 				}
+				else if(event.getCode() == KeyCode.SLASH) {
+					event.consume();
+				}
 			}
+			
 		});
 		/* bouton pour envoyer un message instantane */
 		sendChatButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {

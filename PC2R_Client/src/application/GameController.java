@@ -15,7 +15,8 @@ import rasendeRoboter.Bilan.Score;
 /**
  * 
  * @author Ladislas Halifa
- * Controlleur de la vue Client, necessaire mais rien n'est fait ici
+ * Classe necessaire pour Game.fxml, mais rien n'est fait ici
+ * 
  */
 public class GameController {
 	/**

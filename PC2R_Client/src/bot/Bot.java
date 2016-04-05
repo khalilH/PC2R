@@ -117,6 +117,13 @@ public class Bot {
 				Protocole.sendChat(userName, BotData.getMessageBye(), out);
 				attendre (1);
 				Protocole.disconnect(userName, out);
+				try {
+					socket.close();
+					System.exit(0);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			break;
 		case Protocole.DECONNEXION:
@@ -139,6 +146,13 @@ public class Bot {
 					Protocole.sendChat(userName, BotData.getMessageBye(), out);
 					attendre (1);
 					Protocole.disconnect(userName, out);
+					try {
+						socket.close();
+						System.exit(0);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 			break;
@@ -215,6 +229,13 @@ public class Bot {
 					Protocole.sendChat(userName, BotData.getMessageBye(), out);
 					attendre (1);
 					Protocole.disconnect(userName, out);
+					try {
+						socket.close();
+						System.exit(0);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 			else {

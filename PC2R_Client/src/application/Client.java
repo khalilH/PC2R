@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -49,7 +50,7 @@ import rasendeRoboter.Plateau;
 
 /**
  * 
- * @author Ladislas Halifa -
+ * @author Ladislas Halifa
  * Classe Principale du Client
  */
 public class Client extends Application {
@@ -66,14 +67,13 @@ public class Client extends Application {
 
 
 	/* Client stuff */
-	private BufferedReader in;
 	private Calendar calendar = Calendar.getInstance();
-	private DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+	DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+	private String userName;
+	private Socket socket;
+	private BufferedReader in;
 	private PrintStream out;
 	private Receive receiver;
-	private Socket socket;
-	private Stage stage;
-	private String userName;
 
 	/* Audio */
 	Media correctSound = null;
@@ -106,6 +106,8 @@ public class Client extends Application {
 	private Plateau plateau = null;
 	private String currentSolution = "";
 	private String lastActif = "";
+	private List<String> listeMessageServer = new ArrayList<String>();
+	private List<String> listeMessageChat = new ArrayList<String>();
 
 	/* javaFX Nodes */
 	private AnchorPane root;
@@ -119,7 +121,7 @@ public class Client extends Application {
 	private Label coupsSolutionLabel;
 	private Label phaseLabel;
 	private Label tourLabel;
-	
+	private Stage stage;
 	private Text errorMessageText;
 	private TextArea solutionTextArea;
 	private TextArea serverAnswer;
@@ -224,10 +226,10 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Ajout des EventHandler  
+	 * ajout des EventHandler 
 	 */
 	private void installEventHandler() {
-		/* taper entree pour essayer de connecter au serveur*/
+		/* taper entree pour ce conecter */
 		userTextField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
@@ -244,7 +246,7 @@ public class Client extends Application {
 				}
 			}
 		});
-		/* bouton pour essayer de se connecter au serveur*/
+		/* bouton pour se connecter */
 		loginButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -252,7 +254,7 @@ public class Client extends Application {
 			}
 		});
 
-		/* taper Entree pour envoyer un message instantane */
+		/* taper Entree pour envoyer message */
 		sendChatTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
@@ -261,9 +263,7 @@ public class Client extends Application {
 					envoyerMessageChat();
 				}
 			}
-			
 		});
-		/* bouton pour envoyer un message instantane */
 		sendChatButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -278,14 +278,13 @@ public class Client extends Application {
 				stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
 			}
 		});
-		/* bouton pour encherir ou annoncer qu'on a une solution */
+		/* bouton pour encherir */
 		trouveEnchereButton.addEventHandler(ActionEvent.ACTION, new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				envoyerEnchere();
 			}
 		});
-		/* taper ENTREE pour encherir ou annoncer qu'on a une solution */
 		coupTextField.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
@@ -301,7 +300,7 @@ public class Client extends Application {
 				envoyerSolution();
 			}
 		});
-		/* saisie d'une solution au clavier avec les fleches directionnelles*/
+		/* saisie d'une solution */
 		solutionTextArea.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 
 			@Override
@@ -388,7 +387,6 @@ public class Client extends Application {
 	 * @return true si les sons sont bien initialises, false sinon
 	 */
 	private boolean initMedia() {
-		/* ne marche que sur ma machine, exception levee a la ppti */
 		try {
 			correctSound = new Media(new File(CORRECT).toURI().toString());
 			wrongSound = new Media(new File(WRONG).toURI().toString());
@@ -410,7 +408,7 @@ public class Client extends Application {
 		}
 		catch (MediaException me) {
 			System.err.println("Probleme avec l'initialisation des sons");
-//			me.printStackTrace();
+			//			me.printStackTrace();
 			return false;
 		}
 	}
@@ -439,7 +437,6 @@ public class Client extends Application {
 					serverAnswer.appendText("Bienvenue "+userName+"\n");
 					if (!isAudioReady) {
 						serverAnswer.appendText("Effets sonores non disponibles.\n");
-						serverAnswer.appendText("Lisez le manuel pour resoudre le probleme\n");
 					}
 					sendChatButton.setDisable(false);
 					sendChatTextArea.setDisable(false);
@@ -468,10 +465,6 @@ public class Client extends Application {
 		return socket;
 	}
 
-	/**
-	 * Permet de signaler au serveur que le client se deconnecte, et de liberer
-	 * les ressources audio si besoin
-	 */
 	private void deconnexion() {
 		if(out != null) {
 			Protocole.disconnect(userName, out);
@@ -495,7 +488,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet d'envoyer un message instantanne
+	 * Permet d'envoyer un message de chat
 	 */
 	private void envoyerMessageChat() {
 		String msg = sendChatTextArea.getText();
@@ -547,8 +540,8 @@ public class Client extends Application {
 	private void envoyerSolution() {
 		if (phase == Phase.RESOLUTION) {
 			String deplacements = solutionTextArea.getText();
+			currentSolution = "";
 			if (Outils.isValidSolution(deplacements)) {
-				currentSolution = "";
 				Protocole.sendSolution(userName,deplacements,out);
 				solutionTextArea.setText("");
 				solutionButton.setDisable(true);
@@ -606,8 +599,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Fonction de traitement d'une requete du serveur hors notification
-	 * chat ou connexion/deconnexion d'un utilisateur
+	 * Fonction de traitement d'une requete du serveur synchronisee
 	 * @param reponse la requete du serveur
 	 */
 	private synchronized void traitementReponseServerSync(String reponse) {
@@ -650,10 +642,10 @@ public class Client extends Application {
 			bilan.decoderBilan(data);
 			updateBilan();
 			this.plateau.enleverRobots();
-			updatePlateau();
 			this.enigme = new Enigme(enigme);
 			this.plateau.setEnigme(this.enigme);
 			if (phase == Phase.ATTENTE_TOUR) {
+				updatePlateau();
 				phase = Phase.REFLEXION;
 				if (isAudioReady) {
 					reflexionMediaPlayer.play();
@@ -666,12 +658,10 @@ public class Client extends Application {
 						trouveEnchereButton.setText("Trouve");
 						trouveEnchereButton.setDisable(false);
 						coupTextField.setDisable(false);
-						coupTextField.requestFocus();
 						errorLabel.setText("");
 						coupsSolutionLabel.setText("");
 					}
 				});
-				updatePlateau();
 				updateServerAnswer("La phase de reflexion commence");
 			}
 			else {
@@ -682,13 +672,13 @@ public class Client extends Application {
 			if (phase == Phase.REFLEXION && tuAsTrouve) {
 				phase = Phase.ENCHERE;
 				updatePhaseLabel(phase);
-				updateServerAnswer("Votre annonce est validee !\nLa phase d'enchere commence");
+				updateServerAnswer("Votre annonce est validee !");
+				updateServerAnswer("La phase d'enchere commence");
 				if (isAudioReady) {
 					enchereMediaPlayer.play();
 					enchereMediaPlayer.seek(Duration.ZERO);
 				}
 				updateTrouveEnchereButton("Encherir");
-				coupTextField.requestFocus();
 				tuAsTrouve = false;
 			}
 			else {
@@ -701,13 +691,13 @@ public class Client extends Application {
 				updatePhaseLabel(phase);
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
-				updateServerAnswer(user+" a trouve en "+data+" coups !\nLa phase d'enchere commence");
+				updateServerAnswer(user+" a trouve en "+data+" coups !");
+				updateServerAnswer("La phase d'enchere commence");
 				if (isAudioReady) {
 					enchereMediaPlayer.play();
 					enchereMediaPlayer.seek(Duration.ZERO);
 				}
 				updateTrouveEnchereButton("Encherir");
-				coupTextField.requestFocus();
 				tuAsTrouve = false;
 			}
 			else {
@@ -725,7 +715,6 @@ public class Client extends Application {
 				}
 				updateServerAnswer("La phase d'enchere commence");
 				updateTrouveEnchereButton("Encherir");
-				coupTextField.requestFocus();
 				trouveEnchereButton.setDisable(false);
 			}
 			else {
@@ -782,11 +771,10 @@ public class Client extends Application {
 						}
 					}
 					else {
-						updateServerAnswer("Taper votre solution dans la zone ci-dessus\n"+
-								"Touches autorisees : r, b, j, v\n"+
-								"et fleches directionnelles");
+						updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+						updateServerAnswer("Touches autorisees : r, b, j, v");
+						updateServerAnswer("et fleches directionnelles");
 						solutionButton.setDisable(false);
-						solutionTextArea.requestFocus();
 						solutionTextArea.setDisable(false);
 						solutionVBox.setVisible(true);
 						taperCouleurRobot = true;
@@ -858,16 +846,15 @@ public class Client extends Application {
 					});
 				}
 				else {
-					updateServerAnswer("Taper votre solution dans la zone ci-dessus\n"+
-							"Touches autorisees : r, b, j, v\n"+
-							"et fleches directionnelles");
+					updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+					updateServerAnswer("Touches autorisees : r, b, j, v et "
+							+ "fleches directionnelles");
 					Platform.runLater(new Runnable() {
 						@Override
 						public void run() {
 							solutionTextArea.setText("");
 							solutionButton.setDisable(false);
 							solutionTextArea.setDisable(false);
-							solutionTextArea.requestFocus();
 							solutionVBox.setVisible(true);
 							coupsSolutionLabel.setText("");
 						}
@@ -882,8 +869,7 @@ public class Client extends Application {
 			}
 			break;
 		case Protocole.FIN_RESOLUTION:
-			if (phase == Phase.RESOLUTION || phase == Phase.REFLEXION) {
-				updateServerAnswer("Solution refusee");
+			if (phase == Phase.RESOLUTION) {
 				updateServerAnswer("Plus de joueurs restants, Fin du tour");
 				attenteStatutSolution = false;
 				if (wrongMediaPlayer != null)
@@ -930,11 +916,10 @@ public class Client extends Application {
 						updateServerAnswer("Le joueur actif est "+user);
 					}
 					else {
-						updateServerAnswer("Taper votre solution dans la zone ci-dessus\n"+
-								"Touches autorisees : r, b, j, v\n"+
-								"et fleches directionnelles");
+						updateServerAnswer("Taper votre solution dans la zone ci-dessus");
+						updateServerAnswer("Touches autorisees : r, b, j, v et "
+								+ "fleches directionnelles");
 						solutionButton.setDisable(false);
-						solutionTextArea.requestFocus();
 						solutionTextArea.setDisable(false);
 						solutionVBox.setVisible(true);
 						taperCouleurRobot = true;
@@ -953,63 +938,60 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet de lancer une animation de huit secondes d'une solution proposee 
-	 * @param data la solution a afficher sur le plateau
+	 * Lance l'animation d'une solution
+	 * @param data la solution
 	 */
 	private void startAnimation(String data) {
 		ArrayList<String> coups = Outils.getCoups(data);
-		/* pre-calcul de l'intervalle de temps necessaire entre chaque 
-		 * deplacement d'une case pour avoir une animation totale de huit
-		 * secondes */
+		/* Calcul de l'intervalle d'affichage d'un deplacement */
 		(new Runnable() {
+
 			@Override
 			public void run() {
-				Plateau copiePlateau = new Plateau(plateau.toString());
-				Enigme copieEnigme = new Enigme(plateau.getEnigme().toString());
-				copiePlateau.setEnigme(copieEnigme);
+				Plateau d = new Plateau(plateau.toString());
+				Enigme ee = new Enigme(plateau.getEnigme().toString());
+				d.setEnigme(ee);
 
 				int nbMove = 1;
 				for (String coup : coups) {
-					while(copiePlateau.move(coup)) {
+					while(d.move(coup)) {
 						nbMove++;
 					}
 				}
+				System.out.println("nbMove = "+nbMove);
 				interv = 7.6*1000/nbMove;
+				System.out.println("interv "+interv);				
 			}
 		}).run();
 
-		/* Debut effectif de l'animation */
 		int nbCoups = 1;
 		for(String coup : coups) {
 			while (plateau.move(coup)) {
-				try {
-					Thread.sleep((long) interv);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 				Platform.runLater(new Runnable() {
+
 					@Override
 					public void run() {
 						updatePlateauAnim();
 					}
 				});
+				try {
+					Thread.sleep((long) interv);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 			updateNombreCoupsSolution(nbCoups);
 			nbCoups++;
 		}
 	}
 
-	/**
-	 * Permet de recuperer l'heure pour la messagerie instantannee
-	 * @return une chaine de caractere de l'heure
-	 */
 	private String getTime() {
 		calendar = Calendar.getInstance();
 		return "["+dateFormat.format(calendar.getTime())+"] ";
 	}
 
 	/**
-	 * Mise a jour visuelle du tableau des scores et du numero de tour courant
+	 * mise a jour du tableau de score
 	 */
 	private void updateBilan() {
 		Platform.runLater( new Runnable() {
@@ -1023,43 +1005,47 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet d'afficher les messages instantannes recus
-	 * @param msg le message a afficher
+	 * Permet d'afficher message du chat
+	 * @param s le message
 	 */
-	private void updateChat(String msg) {
-		Platform.runLater(new Runnable() {
+	private void updateChat(String s) {
+		(new Runnable() {
 			@Override
 			public void run() {
-				chatTextArea.appendText(getTime()+msg+"\n");
+				listeMessageChat.add(getTime()+s+"\n");
+				String ret = "";
+				for (String msg : listeMessageChat) {
+					ret += msg;
+				}
+				chatTextArea.setText(ret);
+				chatTextArea.appendText("");
+				if (listeMessageChat.size() > 40) {
+					listeMessageChat = listeMessageChat.subList(1, listeMessageChat.size());
+				}
 			}
-		});
+		}).run();
 	}
 
 	/**
-	 * Met a jour visuellement le nombre de coups actuel d'une solution en 
-	 * train d'etre affichee sur le plateau
-	 * @param nbCoups le nombre de coups de la solution
+	 * mise a jour du nombre de coups d'une solution
+	 * @param n le nombre de coups de la solution
 	 */
-	private void updateNombreCoupsSolution(int nbCoups) {
+	private void updateNombreCoupsSolution(int n) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				coupsSolutionLabel.setText(nbCoups+" coups");
+				coupsSolutionLabel.setText(n+" coups");
 				coupsSolutionLabel.setTextFill(Color.BLUEVIOLET);
 			}
 		});
 	}
 
-	/**
-	 * Permet de mettre a jour l'affichage de la phase courante
-	 * @param phase la nouvelle phase
-	 */
-	private void updatePhaseLabel(Phase phase) {
+	private void updatePhaseLabel(Phase p) {
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
 				String s = "";
-				switch(phase) {
+				switch(p) {
 				case ATTENTE_TOUR:
 					s = "ATTENTE DU TOUR SUIVANT";
 					break;
@@ -1079,7 +1065,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet de mettre a jour l'affichage du plateau 
+	 * Mise a jour plateau statique 
 	 */
 	private void updatePlateau(){
 		Platform.runLater( new Runnable() {
@@ -1102,8 +1088,7 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet de mettre a jour l'affichage du plateau a chaque deplacement
-	 * de case d'un robot lors de l'animation d'une solution
+	 * mise a jour plateau dynamique pour affichage de la solution
 	 */
 	private void updatePlateauAnim(){
 		BorderPane caseGUI;
@@ -1122,16 +1107,25 @@ public class Client extends Application {
 	}
 
 	/**
-	 * Permet d'afficher un message du serveur 
-	 * @param msg le message a afficher
+	 * Permet d'affiche message du serveur 
+	 * @param s le message a afficher
 	 */
-	private  void updateServerAnswer(String msg) {
-		Platform.runLater(new Runnable() {
+	private  void updateServerAnswer(String s) {
+		(new Runnable() {
 			@Override
 			public void run() {
-				serverAnswer.appendText(msg+"\n");
+				listeMessageServer.add(s);
+				String ret = "";
+				for (String truc : listeMessageServer) {
+					ret += truc+"\n";
+				}
+				serverAnswer.setText(ret);
+				serverAnswer.appendText("");
+				if (listeMessageServer.size() > 10) {
+					listeMessageServer = listeMessageServer.subList(1, listeMessageServer.size());
+				}
 			}
-		});
+		}).run();
 
 	}
 
@@ -1151,11 +1145,11 @@ public class Client extends Application {
 	/**
 	 * 
 	 * @author Ladislas Halifa
-	 * Service toujours a l'ecoute du serveur, lance une nouvelle Thread
-	 * qui va traiter la commande recue.
+	 * Classe interne a l'ecoute d'un client
 	 */
 	class Receive extends Service<Void> {
 		String recu;
+		ArrayList<String> cmds = new ArrayList<>();
 		@Override
 		protected Task<Void> createTask() {
 			return new Task<Void>() {
@@ -1165,11 +1159,14 @@ public class Client extends Application {
 
 					try {
 						while ((recu = in.readLine()) != null) {
-							System.out.println("Reception : "+recu.length()+" - "+recu);
+							cmds.add(recu);
+							System.out.println("Reception 1 : "+recu.length()+" - "+recu);
 							Thread t = new Thread(new Runnable() {
 								@Override
-								public void run() {
-									traitementReponseServeur(recu);									
+								public void run() {	
+									String commande = cmds.remove(0);
+									System.out.println("Reception 2 : "+commande.length()+" - "+commande);
+									traitementReponseServeur(commande);									
 								}
 							});
 							t.start();
@@ -1182,6 +1179,7 @@ public class Client extends Application {
 			};
 		}	
 	};
+
 
 
 

@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Random;
 
 import application.Outils;
@@ -47,7 +48,7 @@ public class Bot {
 		socket = connexion(userName, host);
 	}
 
-	
+
 
 	public static void main(String[] args) {
 		if (args.length != 1) {
@@ -72,7 +73,7 @@ public class Bot {
 			this.userName = username;
 			try {
 				if (socket == null) {
-					socket = new Socket(host, Protocole.PORT);
+					this.socket = new Socket(host, Protocole.PORT);
 					this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 					this.out = new PrintStream(socket.getOutputStream(), true);
 				}
@@ -140,7 +141,7 @@ public class Bot {
 					String msg = BotData.getMessageOK();
 					Protocole.sendChat(userName, msg, out);
 				}
-				
+
 				if (Math.random() > 0.95) {
 					attendre(2);
 					Protocole.sendChat(userName, BotData.getMessageBye(), out);
@@ -185,6 +186,7 @@ public class Bot {
 			break;
 		case Protocole.IL_A_TROUVE:
 			if (phase == Phase.REFLEXION) {
+				System.out.println(phase);
 				phase = Phase.ENCHERE;
 				user = Outils.getFirstArg(reponse);
 				data = Outils.getSecondArg(reponse);
@@ -419,7 +421,7 @@ public class Bot {
 			break;
 		}
 	}
-	
+
 
 	private String genererSolution(int monEnchere) {
 		Random rand = new Random(System.currentTimeMillis());
@@ -460,7 +462,7 @@ public class Bot {
 
 	class Receive extends Thread {
 		private BufferedReader in;
-
+		private ArrayList<String> cmds = new ArrayList<>();
 		public Receive(BufferedReader in) {
 			this.in = in;
 		}
@@ -469,15 +471,18 @@ public class Bot {
 		public void run() {
 			try {
 				while ((recu = in.readLine()) != null) {
-					System.out.println("recu : "+recu);
-					Thread t = new Thread(new Runnable() {
+					synchronized(recu) {
+						System.out.println("recu : "+recu);
+						cmds.add(recu);
+						Thread t = new Thread(new Runnable() {
 
-						@Override
-						public void run() {
-							decoderReponseServer(recu);							
-						}
-					});
-					t.start();
+							@Override
+							public void run() {
+								decoderReponseServer(cmds.remove(0));							
+							}
+						});
+						t.start();
+					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
